@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Super Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    :root {
+        --sidebar-width: 270px;
+        --primary: #1e40af;
+        --primary-light: #3b82f6;
+        --secondary: #7c3aed;
+        --dark-bg: #0a0f1e;
+        --dark-secondary: #111827;
+        --dark-accent: #1e293b;
+        --glass: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass-hover: rgba(255, 255, 255, 0.06);
+        --text-primary: #f8fafc;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --neon-purple: #a78bfa;
+        --neon-blue: #60a5fa;
+        --accent-blue: #3b82f6;
+        --danger-red: #ef4444;
+        --glass-bg: rgba(255, 255, 255, 0.05);
+    }
+    body { background: linear-gradient(135deg, var(--dark-bg), var(--dark-accent), var(--dark-secondary)); color: var(--text-primary); min-height: 100vh; display: flex; overflow-x: hidden; }
+    
+    /* Futuristic Grid Overlay */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: 
+            linear-gradient(90deg, transparent 0%, rgba(124, 58, 237, 0.03) 50%, transparent 100%),
+            radial-gradient(circle at 15% 20%, rgba(30, 64, 175, 0.10) 0%, transparent 50%),
+            radial-gradient(circle at 85% 80%, rgba(124, 58, 237, 0.08) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* Animated scan lines for futuristic effect */
+    body::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(124, 58, 237, 0.02) 2px,
+            rgba(124, 58, 237, 0.02) 4px
+        );
+        pointer-events: none;
+        z-index: 1;
+        animation: scanlines 15s linear infinite;
+    }
+
+    @keyframes scanlines {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(100px); }
+    }
+    .sidebar { width: var(--sidebar-width); background: var(--glass); backdrop-filter: blur(20px); padding: 30px 20px; border-right: 1px solid var(--glass-border); position: fixed; height: 100vh; display: flex; flex-direction: column; z-index: 100; }
+    .sidebar h2 { margin-bottom: 40px; font-weight: 700; font-size: 22px; color: var(--neon-blue); text-align: center; }
+    .sidebar ul { list-style: none; }
+    .sidebar li { padding: 15px; margin-bottom: 10px; border-radius: 12px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px; color: var(--text-muted); font-weight: 500; }
+    .sidebar li:hover, .sidebar li.active { background: rgba(96,165,250,0.15); color: var(--neon-blue); transform: translateX(5px); }
+    .logout-btn { margin-top: auto; background: rgba(239,68,68,0.1); color: #ef4444; padding: 12px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s; border: 1px solid rgba(239,68,68,0.2); font-weight: 500; display: block; text-decoration: none; }
+    .logout-btn:hover { background: #ef4444; color: white; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(239,68,68,0.3); }
+    .main { flex: 1; padding: 30px 40px; margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); position: relative; z-index: 10; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .search-box { background: var(--glass-hover); border-radius: 30px; padding: 10px 20px; display: flex; align-items: center; border: 1px solid var(--glass-border); width: 350px; transition: 0.3s; margin-right: 20px; }
+    .search-box:focus-within { border-color: var(--neon-blue); }
+    .search-box input { background: transparent; border: none; outline: none; color: var(--text-primary); margin-left: 10px; width: 100%; font-size: 14px; }
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px; }
+    .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; margin-bottom: 25px; }
+    .widget { background: var(--glass-hover); backdrop-filter: blur(10px); padding: 25px; border-radius: 20px; border: 1px solid var(--glass-border); transition: 0.3s; margin-bottom: 20px; }
+    .widget:hover { border-color: var(--neon-purple); transform: translateY(-3px); }
+    .icon-box { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; font-size: 18px; }
+    .chart-container { display: flex; align-items: center; justify-content: space-around; padding: 20px 0; }
+    .donut-chart { width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(#60a5fa 0% 75%, rgba(255,255,255,0.1) 75% 100%); position: relative; display: flex; align-items: center; justify-content: center; }
+    .donut-hole { width: 100px; height: 100px; background: #151e32; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .activity-item { display: flex; gap: 15px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .activity-item button:hover { background: rgba(239,68,68,0.25) !important; transform: translateY(-50%) scale(1.05) !important; }
+    .date-box { background: rgba(96,165,250,0.1); color: #60a5fa; padding: 10px; border-radius: 12px; text-align: center; min-width: 60px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+    th { color: #94a3b8; font-weight: 500; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+    .bg-green-soft { background: rgba(74,222,128,0.1); color: #4ade80; }
+    .bg-blue-soft { background: rgba(96,165,250,0.1); color: #60a5fa; }
+    .bg-red-soft { background: rgba(248,113,113,0.1); color: #f87171; }
+    .bg-yellow-soft { background: rgba(251,191,36,0.1); color: #fbbf24; }
+    .bg-orange-soft { background: rgba(251,146,60,0.1); color: #fb923c; }
+    .modal { display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); }
+    .modal-content { background: #1e293b; margin: 8% auto; padding: 30px; border-radius: 15px; width: 450px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 8px; font-size: 13px; color: #cbd5e1; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; outline: none; }
+    .btn-submit { background: #60a5fa; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600; margin-top: 10px; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .close-modal { float: right; font-size: 20px; cursor: pointer; color: #94a3b8; }
+    .section { display: none; animation: fadeIn 0.4s ease; }
+    .section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .pending-badge { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .faculty-card { background: rgba(255,255,255,0.04); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.07); transition: 0.3s; cursor: pointer; }
+    .faculty-card:hover { border-color: #60a5fa; transform: translateY(-3px); }
+    .faculty-card .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .action-btn { background: #60a5fa; color: #0f172a; border: none; padding: 8px 15px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; }
+    .action-btn.danger { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+    .action-btn.success { background: #10b981; color: white; }
+    #globalSearchResults { display: none; animation: fadeIn 0.3s; }
+    .loader { text-align: center; padding: 40px; color: #94a3b8; }
+    .empty-state { text-align: center; padding: 40px; color: #94a3b8; }
+    .toast { position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; border-radius: 10px; color: white; font-weight: 500; z-index: 9999; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .info-chip { background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.2); color: #93c5fd; padding: 4px 12px; border-radius: 20px; font-size: 12px; display: inline-block; margin-top: 5px; }
+    .faculty-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+    
+    /* Mobile Menu Button */
+    .mobile-menu-btn {
+        display: none;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1001;
+        background: var(--glass-hover);
+        border: 1px solid var(--glass-border);
+        color: var(--text-primary);
+        padding: 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 20px;
+        backdrop-filter: blur(20px);
+    }
+
+    /* Mobile Overlay */
+    .mobile-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+        z-index: 999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .mobile-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+
+    /* Responsive Styles */
+    @media(max-width: 1024px) {
+        .stats-row { grid-template-columns: repeat(2, 1fr); }
+        .dashboard-grid { grid-template-columns: 1fr; }
+        .main { padding: 25px 20px; }
+    }
+
+    @media(max-width: 768px) {
+        .mobile-menu-btn { display: block; }
+        
+        .sidebar { 
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+        }
+        
+        .sidebar.active { 
+            transform: translateX(0);
+            box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .main { 
+            margin-left: 0; 
+            padding: 80px 15px 20px 15px;
+            width: 100%;
+        }
+        
+        .topbar { flex-direction: column; gap: 15px; align-items: stretch; }
+        .search-box { width: 100%; margin-right: 0; }
+        
+        .stats-row { grid-template-columns: 1fr; }
+        .dashboard-grid { grid-template-columns: 1fr; }
+        
+        table { font-size: 13px; overflow-x: auto; display: block; }
+        th, td { padding: 10px 8px; }
+        
+        .widget { padding: 20px; }
+        .faculty-grid { grid-template-columns: 1fr; }
+    }
+
+    @media(max-width: 480px) {
+        .main { padding: 70px 10px 15px 10px; }
+        
+        .sidebar h2 { font-size: 1.2rem; }
+        .sidebar li { padding: 12px; font-size: 14px; gap: 10px; }
+        
+        h1 { font-size: 1.5rem; }
+        h2 { font-size: 1.2rem; }
+        
+        .widget { padding: 15px; }
+        .icon-box { width: 35px; height: 35px; font-size: 16px; }
+        
+        table { font-size: 12px; }
+        th, td { padding: 8px 5px; }
+        
+        .badge { font-size: 9px; padding: 3px 8px; }
+        .action-btn { font-size: 12px; padding: 6px 12px; }
+        
+        .donut-chart { width: 100px; height: 100px; }
+        .donut-hole { width: 70px; height: 70px; font-size: 12px; }
+        
+        .activity-item { flex-direction: column; gap: 10px; }
+        .date-box { min-width: auto; }
+    }
+</style>
+</head>
+<body>
+<div class="mobile-overlay" onclick="closeMobileMenu()"></div>
+
+<button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+    <i class="fas fa-bars"></i>
+</button>
+
+<div class="sidebar">
+    <h2>⚡ NexusAdmin</h2>
+    <ul>
+        <li onclick="switchTab('dashboard', this)" class="active"><i class="fas fa-home" style="margin-right:10px;"></i><span>Overview</span></li>
+        <li onclick="switchTab('students', this)"><i class="fas fa-user-graduate" style="margin-right:10px;"></i><span>Students</span></li>
+        <li onclick="switchTab('faculty', this)"><i class="fas fa-chalkboard-teacher" style="margin-right:10px;"></i><span>Faculty</span></li>
+        <li onclick="switchTab('grievances', this)"><i class="fas fa-exclamation-circle" style="margin-right:10px;"></i><span>Grievances</span></li>
+        <li onclick="switchTab('exams', this)"><i class="fas fa-file-alt" style="margin-right:10px;"></i><span>Exams</span></li>
+    </ul>
+    <button class="logout-btn" onclick="doLogout()"><i class="fas fa-sign-out-alt" style="margin-right:8px;"></i>Logout</button>
+</div>
+
+<div class="main">
+    <div class="topbar">
+        <div>
+            <h1 id="page-title">Dashboard Overview</h1>
+            <p id="greeting-text" style="color:#94a3b8; font-size:14px; margin-top:4px;">Welcome back, Admin 👋</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <div class="search-box">
+                <i class="fas fa-search" style="color:#94a3b8;"></i>
+                <input type="text" id="globalSearch" placeholder="Search students, faculty..." onkeyup="handleSearch()">
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="section active">
+        <div id="dashboardWidgets">
+            <div class="stats-row">
+                <div class="widget" onclick="switchTab('students', document.querySelectorAll('.sidebar li')[1])" style="cursor:pointer;">
+                    <div class="icon-box bg-blue-soft"><i class="fas fa-users"></i></div>
+                    <h3 id="statStudents">—</h3><p style="color:#94a3b8; font-size:13px;">Total Students</p>
+                </div>
+                <div class="widget" onclick="switchTab('faculty', document.querySelectorAll('.sidebar li')[2])" style="cursor:pointer;">
+                    <div class="icon-box bg-green-soft"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <h3 id="statFaculty">—</h3><p style="color:#94a3b8; font-size:13px;">Total Faculty</p>
+                </div>
+                <div class="widget" onclick="switchTab('faculty', document.querySelectorAll('.sidebar li')[2])" style="cursor:pointer;">
+                    <div class="icon-box bg-yellow-soft"><i class="fas fa-clock"></i></div>
+                    <h3 id="statPending">—</h3><p style="color:#94a3b8; font-size:13px;">Pending Approvals</p>
+                </div>
+                <div class="widget">
+                    <div class="icon-box bg-red-soft"><i class="fas fa-book-open"></i></div>
+                    <h3 id="statCourses">—</h3><p style="color:#94a3b8; font-size:13px;">Total Courses</p>
+                </div>
+            </div>
+            <div class="dashboard-grid">
+                <div class="widget" style="grid-column: 1 / -1;">
+                    <h3 style="margin-bottom:15px;">Notice Board</h3>
+                    <div style="margin-bottom:20px;">
+                        <textarea id="noticeText" placeholder="Write a notice for all students..." style="width:100%; padding:12px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:white; min-height:80px; resize:vertical; font-family:'Poppins',sans-serif;"></textarea>
+                        <button class="btn-submit" onclick="postNotice()" style="margin-top:10px; width:auto; padding:10px 25px;">📢 Post Notice</button>
+                    </div>
+                    <div id="noticesList"></div>
+                </div>
+            </div>
+        </div>
+        <div id="globalSearchResults"></div>
+    </div>
+
+    <!-- STUDENTS -->
+    <div id="students" class="section">
+        <div class="widget">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3>Student Directory</h3>
+            </div>
+            <div id="studentsLoader" class="loader">Loading students...</div>
+            <table id="studentsTable" style="display:none;">
+                <thead><tr><th>Name</th><th>Email</th><th>Courses Enrolled</th><th>Total Credits</th><th>Status</th></tr></thead>
+                <tbody id="studentsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- FACULTY -->
+    <div id="faculty" class="section">
+        <div class="widget" id="facultyList">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div>
+                    <h3>Faculty Directory</h3>
+                    <p style="font-size:12px; color:#94a3b8; margin-top:4px;">Faculty who sign up automatically appear here for course assignment</p>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <span id="pendingFacultyBadge" style="display:none;" class="pending-badge">0 Pending</span>
+                </div>
+            </div>
+            <div id="facultyLoader" class="loader">Loading faculty...</div>
+            <div class="faculty-grid" id="facultyGrid"></div>
+        </div>
+
+        <div class="widget" id="facultyDetail" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <button onclick="closeFacultyDetail()" style="background:none; border:none; color:#60a5fa; cursor:pointer; font-size:16px;">← Back to Directory</button>
+                <div style="display:flex; gap:10px;">
+                    <button id="approveBtn" onclick="approveFaculty()" class="action-btn success" style="display:none;">✓ Approve Faculty</button>
+                    <button onclick="openModal('assignCourseModal')" class="action-btn">+ Assign New Course</button>
+                </div>
+            </div>
+            <div style="text-align:center; margin-bottom:30px;">
+                <div style="font-size:50px; margin-bottom:10px;">👨‍🏫</div>
+                <h2 id="detailName" style="font-size:28px; color:white;"></h2>
+                <p id="detailEmail" style="color:#94a3b8; font-size:14px; margin-top:4px;"></p>
+                <div id="detailDept" style="margin-top:8px;" class="info-chip"></div>
+                <div id="detailStatus" style="margin-top:10px;"></div>
+            </div>
+            <h3 style="margin-bottom:10px;">Courses Assigned</h3>
+            <table>
+                <thead><tr><th>Code</th><th>Course Name</th><th>Credits</th><th>Schedule</th><th>Students Enrolled</th><th>Action</th></tr></thead>
+                <tbody id="detailCourses"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- GRIEVANCES -->
+    <div id="grievances" class="section">
+        <div class="widget">
+            <h3 style="margin-bottom:15px;">👁️ The Watcher's Eye - Student Grievances</h3>
+            <div id="grievancesLoader" class="loader">Loading...</div>
+            <table id="grievancesTable" style="display:none;">
+                <thead><tr><th>Student</th><th>Category</th><th>Priority</th><th>Subject</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody id="grievanceBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- GRIEVANCE STATUS MODAL -->
+    <div id="grievanceStatusModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('grievanceStatusModal')">&times;</span>
+            <h3 style="margin-bottom:20px;">Update Grievance Status</h3>
+            <div class="form-group">
+                <label>New Status</label>
+                <select id="grievanceNewStatus">
+                    <option value="Submitted">Submitted</option>
+                    <option value="Under Review">Under Review</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Resolved">Resolved</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Remarks/Comments</label>
+                <textarea id="grievanceRemarks" placeholder="Add any remarks..." style="height:80px;"></textarea>
+            </div>
+            <button class="btn-submit" onclick="updateGrievanceStatus()">Update Status</button>
+        </div>
+    </div>
+
+    <!-- EXAMS -->
+    <div id="exams" class="section">
+        <div class="widget">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3>Exam Schedule</h3>
+                <button onclick="openModal('examModal')" class="action-btn">+ Add Exam</button>
+            </div>
+            <div id="examsList"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ASSIGN COURSE MODAL -->
+<div id="assignCourseModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('assignCourseModal')">&times;</span>
+        <h3 style="margin-bottom:20px;">Assign Course to Faculty</h3>
+        <div class="form-group">
+            <label>Course Name</label>
+            <input type="text" id="assignCourseName" placeholder="e.g. Machine Learning">
+        </div>
+        <div class="form-group">
+            <label>Course Code</label>
+            <input type="text" id="assignCourseCode" placeholder="e.g. CS-405">
+        </div>
+        <div class="form-group">
+            <label>Credits</label>
+            <input type="number" id="assignCourseCredits" placeholder="e.g. 3" min="1" max="10">
+        </div>
+        <div class="form-group">
+            <label>Department</label>
+            <input type="text" id="assignCourseDept" placeholder="e.g. Computer Science">
+        </div>
+        <div class="form-group">
+            <label>Schedule</label>
+            <input type="text" id="assignCourseTime" placeholder="e.g. Mon 10:00 AM">
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="assignCourseDesc" placeholder="Brief course description..." style="height:80px;"></textarea>
+        </div>
+        <button class="btn-submit" id="assignCourseBtn" onclick="assignCourse()">Assign Course</button>
+    </div>
+</div>
+
+<!-- EXAM MODAL -->
+<div id="examModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('examModal')">&times;</span>
+        <h3 style="margin-bottom:20px;">Add Exam</h3>
+        <div class="form-group">
+            <label>Exam Name</label>
+            <input type="text" id="examName" placeholder="e.g. Mid-Term Examination">
+        </div>
+        <div class="form-group">
+            <label>Subject</label>
+            <input type="text" id="examSubject" placeholder="e.g. Data Structures">
+        </div>
+        <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="examDate">
+        </div>
+        <div class="form-group">
+            <label>Time</label>
+            <input type="time" id="examTime">
+        </div>
+        <div class="form-group">
+            <label>Room/Venue</label>
+            <input type="text" id="examRoom" placeholder="e.g. Hall A">
+        </div>
+        <button id="addExamBtn" class="btn-submit" onclick="addExam()">Add Exam</button>
+    </div>
+</div>
+
+<!-- STUDENT PROFILE MODAL -->
+<div id="studentProfileModal" class="modal">
+    <div class="modal-content" style="max-width:900px; max-height:85vh; overflow-y:auto;">
+        <span class="close-modal" onclick="closeModal('studentProfileModal')">&times;</span>
+        <h3 style="margin-bottom:10px;" id="studentProfileName">Student Profile</h3>
+        <p style="color:#94a3b8; font-size:13px; margin-bottom:25px;" id="studentProfileEmail"></p>
+        
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom:25px;">
+            <div style="background:rgba(96,165,250,0.1); padding:15px; border-radius:12px; border:1px solid rgba(96,165,250,0.2);">
+                <p style="font-size:12px; color:#94a3b8; margin-bottom:5px;">Total Courses</p>
+                <p style="font-size:24px; font-weight:700; color:#60a5fa;" id="studentTotalCourses">-</p>
+            </div>
+            <div style="background:rgba(16,185,129,0.1); padding:15px; border-radius:12px; border:1px solid rgba(16,185,129,0.2);">
+                <p style="font-size:12px; color:#94a3b8; margin-bottom:5px;">Total Credits</p>
+                <p style="font-size:24px; font-weight:700; color:#10b981;" id="studentTotalCredits">-</p>
+            </div>
+            <div style="background:rgba(251,191,36,0.1); padding:15px; border-radius:12px; border:1px solid rgba(251,191,36,0.2);">
+                <p style="font-size:12px; color:#94a3b8; margin-bottom:5px;">Avg Attendance</p>
+                <p style="font-size:24px; font-weight:700; color:#fbbf24;" id="studentAvgAttendance">-</p>
+            </div>
+        </div>
+        
+        <h4 style="margin-bottom:15px; color:#60a5fa;">Enrolled Courses</h4>
+        <div id="studentCoursesList"></div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, onSnapshot, query, where, addDoc, serverTimestamp, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBxCc7lG8NZ6v7gOtFvugEUk2x9GExFMOA",
+        authDomain: "krackhack-b3b15.firebaseapp.com",
+        projectId: "krackhack-b3b15",
+        storageBucket: "krackhack-b3b15.firebasestorage.app",
+        messagingSenderId: "902045796437",
+        appId: "1:902045796437:web:0344f8a2cbe168e8572cdc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentFacultyId = null;
+    let allFaculty = [];
+    let allStudents = [];
+    let allCourses = [];
+
+    // =====================
+    // AUTH GUARD
+    // =====================
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = 'index.html'; return; }
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (!userDoc.exists() || userDoc.data().role !== 'admin') {
+            window.location.href = 'index.html'; return;
+        }
+        initDashboard();
+    });
+
+    // =====================
+    // INIT
+    // =====================
+    function initDashboard() {
+        setGreeting();
+        loadFaculty();
+        loadStudents();
+        loadCourses();
+        loadGrievances();
+        loadExams();
+        loadNotices();
+    }
+
+    function setGreeting() {
+        const hour = new Date().getHours();
+        const greeting = hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
+        document.getElementById('greeting-text').innerText = `${greeting}, Admin 👋`;
+    }
+
+    // =====================
+    // LOAD FACULTY (real-time)
+    // =====================
+    function loadFaculty() {
+        const facultyQuery = query(collection(db, 'users'), where('role', '==', 'faculty'));
+        onSnapshot(facultyQuery, (snapshot) => {
+            allFaculty = snapshot.docs.map(d => ({ uid: d.id, ...d.data() }));
+            const pending = allFaculty.filter(f => !f.approved).length;
+            document.getElementById('statFaculty').innerText = allFaculty.length;
+            document.getElementById('statPending').innerText = pending;
+            const badge = document.getElementById('pendingFacultyBadge');
+            if (pending > 0) { badge.style.display = 'inline'; badge.innerText = pending + ' Pending'; }
+            else { badge.style.display = 'none'; }
+            renderFacultyGrid();
+        });
+    }
+
+    // =====================
+    // LOAD STUDENTS (real-time)
+    // =====================
+    function loadStudents() {
+        const studentQuery = query(collection(db, 'users'), where('role', '==', 'student'));
+        onSnapshot(studentQuery, (snapshot) => {
+            allStudents = snapshot.docs.map(d => ({ uid: d.id, ...d.data() }));
+            document.getElementById('statStudents').innerText = allStudents.length;
+            renderStudents();
+        });
+    }
+
+    // =====================
+    // LOAD COURSES (real-time)
+    // =====================
+    function loadCourses() {
+        onSnapshot(collection(db, 'courses'), (snapshot) => {
+            allCourses = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            document.getElementById('statCourses').innerText = allCourses.length;
+            // Re-render faculty grid so course counts are accurate
+            if (allFaculty.length > 0) renderFacultyGrid();
+        });
+    }
+
+    // =====================
+    // LOAD GRIEVANCES
+    // =====================
+    function loadGrievances() {
+        onSnapshot(collection(db, 'grievances'), (snapshot) => {
+            const grievances = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            const tbody = document.getElementById('grievanceBody');
+            document.getElementById('grievancesLoader').style.display = 'none';
+            document.getElementById('grievancesTable').style.display = 'table';
+            if (grievances.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">No grievances submitted yet.</td></tr>';
+                return;
+            }
+            
+            // Sort by priority and status
+            grievances.sort((a, b) => {
+                const priorityOrder = { 'Critical': 0, 'High': 1, 'Medium': 2, 'Low': 3 };
+                return (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4);
+            });
+            
+            tbody.innerHTML = grievances.map(g => {
+                const statusColors = {
+                    'Submitted': 'bg-blue-soft',
+                    'Under Review': 'bg-orange-soft',
+                    'In Progress': 'bg-yellow-soft',
+                    'Resolved': 'bg-green-soft',
+                    'pending': 'bg-yellow-soft',
+                    'resolved': 'bg-green-soft'
+                };
+                const statusClass = statusColors[g.status] || 'bg-yellow-soft';
+                
+                const priorityColors = {
+                    'Critical': 'bg-red-soft',
+                    'High': 'bg-orange-soft',
+                    'Medium': 'bg-yellow-soft',
+                    'Low': 'bg-green-soft'
+                };
+                const priorityClass = priorityColors[g.priority] || 'bg-yellow-soft';
+                
+                return `
+                    <tr style="cursor:pointer;" onclick="openGrievanceStatus('${g.id}')">
+                        <td>
+                            ${g.isAnonymous ? '<span style="color:#a78bfa;">🔒 Anonymous</span>' : g.studentName || 'Unknown'}
+                            ${g.location && g.location !== 'Not specified' ? `<br><small style="color:#64748b;">📍 ${g.location}</small>` : ''}
+                        </td>
+                        <td><span class="badge ${priorityClass}">${g.category || 'General'}</span></td>
+                        <td><span class="badge ${priorityClass}">${g.priority || 'Medium'}</span></td>
+                        <td>
+                            <strong>${g.subject || '—'}</strong>
+                            <br><small style="color:#94a3b8;">${g.description?.substring(0, 60) || '—'}${g.description?.length > 60 ? '...' : ''}</small>
+                        </td>
+                        <td><span class="badge ${statusClass}">${g.status || 'Pending'}</span></td>
+                        <td><button class="action-btn" onclick="event.stopPropagation(); openGrievanceStatus('${g.id}')">Update</button></td>
+                    </tr>
+                `;
+            }).join('');
+        });
+    }
+
+    // =====================
+    // GRIEVANCE STATUS UPDATE
+    // =====================
+    let currentGrievanceId = null;
+    
+    window.openGrievanceStatus = async (grievanceId) => {
+        currentGrievanceId = grievanceId;
+        const gDoc = await getDoc(doc(db, 'grievances', grievanceId));
+        if (gDoc.exists()) {
+            const g = gDoc.data();
+            document.getElementById('grievanceNewStatus').value = g.status || 'Submitted';
+            openModal('grievanceStatusModal');
+        }
+    };
+    
+    window.updateGrievanceStatus = async () => {
+        if (!currentGrievanceId) return;
+        
+        const newStatus = document.getElementById('grievanceNewStatus').value;
+        const remarks = document.getElementById('grievanceRemarks').value.trim();
+        
+        try {
+            const gDoc = await getDoc(doc(db, 'grievances', currentGrievanceId));
+            const currentData = gDoc.data();
+            const statusHistory = currentData.statusHistory || [];
+            
+            statusHistory.push({
+                status: newStatus,
+                remarks: remarks,
+                timestamp: new Date().toISOString(),
+                updatedBy: 'admin'
+            });
+            
+            await updateDoc(doc(db, 'grievances', currentGrievanceId), {
+                status: newStatus,
+                statusHistory: statusHistory,
+                lastUpdated: serverTimestamp(),
+                ...(newStatus === 'Resolved' ? { resolvedAt: serverTimestamp() } : {})
+            });
+            
+            showToast('Grievance status updated!', '#10b981');
+            closeModal('grievanceStatusModal');
+            document.getElementById('grievanceRemarks').value = '';
+            currentGrievanceId = null;
+        } catch (e) {
+            console.error('Error updating grievance:', e);
+            showToast('Error updating status', '#ef4444');
+        }
+    };
+    
+    window.resolveGrievance = async (gId) => {
+        if (!confirm('Mark this grievance as resolved?')) return;
+        try {
+            const gDoc = await getDoc(doc(db, 'grievances', gId));
+            const currentData = gDoc.data();
+            const statusHistory = currentData.statusHistory || [];
+            
+            statusHistory.push({
+                status: 'Resolved',
+                remarks: 'Marked as resolved by admin',
+                timestamp: new Date().toISOString(),
+                updatedBy: 'admin'
+            });
+            
+            await updateDoc(doc(db, 'grievances', gId), {
+                status: 'Resolved',
+                statusHistory: statusHistory,
+                resolvedAt: serverTimestamp()
+            });
+            showToast('Grievance resolved', '#10b981');
+        } catch (e) {
+            showToast('Error', '#ef4444');
+        }
+    };
+
+    // =====================
+    // RENDER STUDENTS
+    // =====================
+    async function renderStudents(filter = '') {
+        document.getElementById('studentsLoader').style.display = 'none';
+        document.getElementById('studentsTable').style.display = 'table';
+        const tbody = document.getElementById('studentsBody');
+        const filtered = allStudents.filter(s => !filter || s.name?.toLowerCase().includes(filter) || s.email?.toLowerCase().includes(filter));
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8;">No students registered yet.</td></tr>';
+            return;
+        }
+        
+        // For each student, count enrolled courses and calculate total credits
+        const studentRows = await Promise.all(filtered.map(async (s) => {
+            let courseCount = 0;
+            let totalCredits = 0;
+            try {
+                const enrollmentSnap = await getDocs(query(collection(db, 'enrollments'), where('studentId', '==', s.uid)));
+                courseCount = enrollmentSnap.size;
+                
+                // Get course details for each enrollment to sum credits
+                for (const enrollDoc of enrollmentSnap.docs) {
+                    const enrollment = enrollDoc.data();
+                    try {
+                        const courseDoc = await getDoc(doc(db, 'courses', enrollment.courseId));
+                        if (courseDoc.exists()) {
+                            totalCredits += (courseDoc.data().credits || 3);
+                        }
+                    } catch (e) {
+                        console.error('Error fetching course:', e);
+                    }
+                }
+            } catch (e) {
+                console.error('Error counting enrollments:', e);
+            }
+            
+            return `
+                <tr style="cursor:pointer;" onclick="showStudentProfile('${s.uid}')">
+                    <td><b>${s.name}</b></td>
+                    <td style="color:#94a3b8; font-size:12px;">${s.email}</td>
+                    <td style="font-size:13px; color:#60a5fa; font-weight:600;">${courseCount}</td>
+                    <td style="font-size:13px; color:#10b981; font-weight:600;">${totalCredits}</td>
+                    <td><span class="badge bg-green-soft">Active</span></td>
+                </tr>`;
+        }));
+        
+        tbody.innerHTML = studentRows.join('');
+    }
+
+    // =====================
+    // RENDER FACULTY GRID
+    // =====================
+    function renderFacultyGrid(filter = '') {
+        const grid = document.getElementById('facultyGrid');
+        document.getElementById('facultyLoader').style.display = 'none';
+        const filtered = allFaculty.filter(f => !filter || f.name?.toLowerCase().includes(filter) || f.email?.toLowerCase().includes(filter));
+
+        if (filtered.length === 0) {
+            grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">No faculty registered yet. Faculty who sign up will appear here.</div>';
+            return;
+        }
+
+        grid.innerHTML = filtered.map(f => {
+            const courseCount = allCourses.filter(c => c.facultyId === f.uid).length;
+            const isApproved = f.approved;
+            return `
+            <div class="faculty-card" onclick="showFacultyDetail('${f.uid}')">
+                <div style="font-size:32px; margin-bottom:10px; text-align:center;">👨‍🏫</div>
+                <h4 style="text-align:center; margin-bottom:5px;">${f.name}</h4>
+                <p style="color:#94a3b8; font-size:12px; text-align:center; margin-bottom:10px;">${f.email}</p>
+                <div style="text-align:center; margin-bottom:8px;">
+                    <span class="badge ${isApproved ? 'bg-green-soft' : 'bg-yellow-soft'}">${isApproved ? 'Approved' : 'Pending Approval'}</span>
+                </div>
+                <div style="text-align:center;">
+                    <span class="info-chip">${courseCount} Course${courseCount !== 1 ? 's' : ''}</span>
+                </div>
+                <p style="font-size:11px; color:#60a5fa; text-align:center; margin-top:10px;">Click to manage →</p>
+            </div>`;
+        }).join('');
+    }
+
+    // =====================
+    // FACULTY DETAIL
+    // =====================
+    window.showFacultyDetail = async (uid) => {
+        currentFacultyId = uid;
+        const faculty = allFaculty.find(f => f.uid === uid);
+        if (!faculty) return;
+
+        document.getElementById('facultyList').style.display = 'none';
+        document.getElementById('facultyDetail').style.display = 'block';
+
+        document.getElementById('detailName').innerText = faculty.name || 'Unknown';
+        document.getElementById('detailEmail').innerText = faculty.email || '';
+        document.getElementById('detailDept').innerText = faculty.department || 'Department not set';
+
+        const approveBtn = document.getElementById('approveBtn');
+        if (!faculty.approved) {
+            approveBtn.style.display = 'inline-block';
+            document.getElementById('detailStatus').innerHTML = '<span class="badge bg-yellow-soft">⏳ Pending Approval</span>';
+        } else {
+            approveBtn.style.display = 'none';
+            document.getElementById('detailStatus').innerHTML = '<span class="badge bg-green-soft">✓ Approved</span>';
+        }
+
+        loadFacultyCourses(uid);
+    };
+
+    function loadFacultyCourses(uid) {
+        const coursesQuery = query(collection(db, 'courses'), where('facultyId', '==', uid));
+        onSnapshot(coursesQuery, (snapshot) => {
+            const courses = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            const tbody = document.getElementById('detailCourses');
+            if (courses.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#94a3b8;">No courses assigned yet. Use "+ Assign New Course" above.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = courses.map(c => `
+                <tr>
+                    <td><span class="badge bg-blue-soft">${c.code}</span></td>
+                    <td><b>${c.name}</b></td>
+                    <td>${c.credits || 3}</td>
+                    <td style="color:#94a3b8; font-size:12px;">${c.schedule || '—'}</td>
+                    <td><span class="badge bg-green-soft">${c.enrolledCount || 0} Students</span></td>
+                    <td><button class="badge bg-red-soft" style="border:none; cursor:pointer; padding:5px 10px;" onclick="removeCourse('${c.id}', '${c.name}')">Remove</button></td>
+                </tr>`).join('');
+        });
+    }
+
+    // =====================
+    // APPROVE FACULTY
+    // =====================
+    window.approveFaculty = async () => {
+        if (!currentFacultyId) return;
+        try {
+            await updateDoc(doc(db, 'users', currentFacultyId), { approved: true });
+            showToast('Faculty approved successfully!', '#10b981');
+            document.getElementById('approveBtn').style.display = 'none';
+            document.getElementById('detailStatus').innerHTML = '<span class="badge bg-green-soft">✓ Approved</span>';
+        } catch (e) {
+            showToast('Error approving faculty', '#ef4444');
+        }
+    };
+
+    // =====================
+    // ASSIGN COURSE
+    // =====================
+    window.assignCourse = async () => {
+        if (!currentFacultyId) return;
+        const name = document.getElementById('assignCourseName').value.trim();
+        const code = document.getElementById('assignCourseCode').value.trim();
+        const credits = document.getElementById('assignCourseCredits').value.trim();
+        const dept = document.getElementById('assignCourseDept').value.trim();
+        const schedule = document.getElementById('assignCourseTime').value.trim();
+        const desc = document.getElementById('assignCourseDesc').value.trim();
+
+        if (!name || !code || !schedule || !credits) { showToast('Fill in Name, Code, Credits, and Schedule', '#f59e0b'); return; }
+
+        const btn = document.getElementById('assignCourseBtn');
+        btn.disabled = true; btn.innerText = 'Assigning...';
+
+        try {
+            const faculty = allFaculty.find(f => f.uid === currentFacultyId);
+            await addDoc(collection(db, 'courses'), {
+                name, code, 
+                credits: parseInt(credits),
+                dept: dept || (faculty?.department || ''),
+                schedule, description: desc,
+                facultyId: currentFacultyId,
+                facultyName: faculty?.name || 'Unknown',
+                enrolledCount: 0,
+                createdAt: serverTimestamp()
+            });
+            showToast(`Course "${name}" assigned!`, '#10b981');
+            closeModal('assignCourseModal');
+            document.getElementById('assignCourseName').value = '';
+            document.getElementById('assignCourseCode').value = '';
+            document.getElementById('assignCourseCredits').value = '';
+            document.getElementById('assignCourseDept').value = '';
+            document.getElementById('assignCourseTime').value = '';
+            document.getElementById('assignCourseDesc').value = '';
+            
+            // Reload courses to update display
+            const coursesSnap = await getDocs(collection(db, 'courses'));
+            allCourses = coursesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            showFacultyDetail(currentFacultyId);
+        } catch (e) {
+            showToast('Error assigning course', '#ef4444');
+            console.error(e);
+        } finally {
+            btn.disabled = false; btn.innerText = 'Assign Course';
+        }
+    };
+
+    // =====================
+    // REMOVE COURSE
+    // =====================
+    window.removeCourse = async (courseId, courseName) => {
+        if (!confirm(`Remove course "${courseName}"? Students will be unenrolled.`)) return;
+        try {
+            await deleteDoc(doc(db, 'courses', courseId));
+            showToast('Course removed', '#f59e0b');
+        } catch (e) {
+            showToast('Error removing course', '#ef4444');
+        }
+    };
+
+    // =====================
+    // RESOLVE GRIEVANCE
+    // =====================
+    window.resolveGrievance = async (gId) => {
+        try {
+            await updateDoc(doc(db, 'grievances', gId), {
+                status: 'resolved',
+                resolvedAt: serverTimestamp()
+            });
+            showToast('Grievance resolved', '#10b981');
+        } catch (e) {
+            showToast('Error', '#ef4444');
+        }
+    };
+
+    // =====================
+    // CLOSE DETAIL
+    // =====================
+    window.closeFacultyDetail = () => {
+        document.getElementById('facultyDetail').style.display = 'none';
+        document.getElementById('facultyList').style.display = 'block';
+        currentFacultyId = null;
+    };
+
+    // =====================
+    // SEARCH
+    // =====================
+    window.handleSearch = () => {
+        const q = document.getElementById('globalSearch').value.toLowerCase();
+        const activeId = document.querySelector('.section.active').id;
+        if (activeId === 'students') renderStudents(q);
+        else if (activeId === 'faculty') renderFacultyGrid(q);
+    };
+
+    // =====================
+    // NAVIGATION
+    // =====================
+    window.switchTab = (tabId, element) => {
+        document.getElementById('globalSearch').value = '';
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        if (element) {
+            document.querySelectorAll('.sidebar li').forEach(li => li.classList.remove('active'));
+            element.classList.add('active');
+        }
+        const titles = { dashboard: 'Dashboard Overview', students: 'Student Directory', faculty: 'Faculty Management', grievances: 'Student Grievances', exams: 'Exam Schedule' };
+        document.getElementById('page-title').innerText = titles[tabId] || '';
+    };
+
+    // =====================
+    // MODAL
+    // =====================
+    window.openModal = (id) => { document.getElementById(id).style.display = 'block'; };
+    window.closeModal = (id) => { document.getElementById(id).style.display = 'none'; };
+
+    // =====================
+    // EXAMS
+    // =====================
+    function loadExams() {
+        onSnapshot(query(collection(db, 'exams'), orderBy('date', 'asc')), (snap) => {
+            const list = document.getElementById('examsList');
+            
+            if (snap.empty) {
+                list.innerHTML = '<div class="empty-state">No exams scheduled yet.</div>';
+                return;
+            }
+
+            list.innerHTML = snap.docs.map(d => {
+                const exam = d.data();
+                const examDate = new Date(exam.date);
+                const formattedDate = examDate.toLocaleDateString('en-IN', { 
+                    day: 'numeric', 
+                    month: 'short', 
+                    year: 'numeric' 
+                });
+                
+                return `
+                    <div style="background: rgba(255,255,255,0.04); padding: 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 style="color:#60a5fa; margin-bottom:6px;">${exam.name}</h4>
+                            <p style="font-size:13px; margin-bottom:4px;"><strong>Subject:</strong> ${exam.subject}</p>
+                            <p style="font-size:12px; color:#94a3b8;"><strong>Date:</strong> ${formattedDate} | <strong>Time:</strong> ${exam.time} | <strong>Room:</strong> ${exam.room}</p>
+                        </div>
+                        <button class="action-btn danger" onclick="removeExam('${d.id}')">Remove</button>
+                    </div>
+                `;
+            }).join('');
+        });
+    }
+
+    window.addExam = async () => {
+        const name = document.getElementById('examName').value.trim();
+        const subject = document.getElementById('examSubject').value.trim();
+        const date = document.getElementById('examDate').value;
+        const time = document.getElementById('examTime').value;
+        const room = document.getElementById('examRoom').value.trim();
+
+        if (!name || !subject || !date || !time || !room) {
+            showToast('Fill in all fields', '#f59e0b');
+            return;
+        }
+
+        const btn = document.getElementById('addExamBtn');
+        btn.disabled = true;
+        btn.innerText = 'Adding...';
+
+        try {
+            await addDoc(collection(db, 'exams'), {
+                name,
+                subject,
+                date,
+                time,
+                room,
+                createdAt: serverTimestamp()
+            });
+            
+            showToast('Exam added successfully!', '#10b981');
+            closeModal('examModal');
+            document.getElementById('examName').value = '';
+            document.getElementById('examSubject').value = '';
+            document.getElementById('examDate').value = '';
+            document.getElementById('examTime').value = '';
+            document.getElementById('examRoom').value = '';
+        } catch (e) {
+            showToast('Error adding exam', '#ef4444');
+            console.error(e);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'Add Exam';
+        }
+    };
+
+    window.removeExam = async (examId) => {
+        if (!confirm('Remove this exam from the schedule?')) return;
+        try {
+            await deleteDoc(doc(db, 'exams', examId));
+            showToast('Exam removed', '#f59e0b');
+        } catch (e) {
+            showToast('Error removing exam', '#ef4444');
+        }
+    };
+
+    // =====================
+    // NOTICE BOARD
+    // =====================
+    function loadNotices() {
+        onSnapshot(query(collection(db, 'globalAnnouncements'), where('type', '==', 'admin_notice')), (snap) => {
+            const list = document.getElementById('noticesList');
+            if (snap.empty) {
+                list.innerHTML = '<div class="empty-state" style="padding:20px;">No notices posted yet. Post the first notice above!</div>';
+                return;
+            }
+            
+            // Sort by createdAt in JavaScript
+            const notices = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            notices.sort((a, b) => {
+                const timeA = a.createdAt?.seconds || 0;
+                const timeB = b.createdAt?.seconds || 0;
+                return timeB - timeA; // Descending order (newest first)
+            });
+            
+            list.innerHTML = notices.map(notice => {
+                const date = notice.createdAt?.toDate ? notice.createdAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Just now';
+                const dayNum = notice.createdAt?.toDate ? new Date(notice.createdAt.toDate()).getDate() : '—';
+                const monthShort = notice.createdAt?.toDate ? new Date(notice.createdAt.toDate()).toLocaleDateString('en-IN', { month: 'short' }) : '—';
+                
+                return `
+                    <div class="activity-item" style="position:relative; padding-right:70px;">
+                        <div class="date-box">${dayNum}<br><small>${monthShort}</small></div>
+                        <div style="flex:1;">
+                            <h4>${notice.text}</h4>
+                            <p style="font-size:12px; color:#94a3b8;">Posted: ${date}</p>
+                        </div>
+                        <button onclick="deleteNotice('${notice.id}')" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(239,68,68,0.15); color:#ef4444; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; transition:0.2s;">Delete</button>
+                    </div>
+                `;
+            }).join('');
+        }, (error) => {
+            console.error('Error loading notices:', error);
+            const list = document.getElementById('noticesList');
+            list.innerHTML = '<div class="empty-state" style="padding:20px; color:#ef4444;">Error loading notices. Please refresh the page.</div>';
+        });
+    }
+
+    window.postNotice = async () => {
+        const text = document.getElementById('noticeText').value.trim();
+        if (!text) {
+            showToast('Please enter a notice', '#f59e0b');
+            return;
+        }
+        try {
+            await addDoc(collection(db, 'globalAnnouncements'), {
+                text: text,
+                type: 'admin_notice',
+                createdAt: serverTimestamp()
+            });
+            document.getElementById('noticeText').value = '';
+            showToast('Notice posted successfully!', '#10b981');
+        } catch (e) {
+            showToast('Error posting notice', '#ef4444');
+            console.error(e);
+        }
+    };
+
+    window.deleteNotice = async (noticeId) => {
+        if (!confirm('Delete this notice?')) return;
+        try {
+            await deleteDoc(doc(db, 'globalAnnouncements', noticeId));
+            showToast('Notice deleted', '#f59e0b');
+        } catch (e) {
+            showToast('Error deleting notice', '#ef4444');
+        }
+    };
+
+    // =====================
+    // STUDENT PROFILE
+    // =====================
+    window.showStudentProfile = async (studentId) => {
+        const student = allStudents.find(s => s.uid === studentId);
+        if (!student) return;
+        
+        document.getElementById('studentProfileName').innerText = student.name;
+        document.getElementById('studentProfileEmail').innerText = student.email;
+        
+        try {
+            // Get student enrollments
+            const enrollmentSnap = await getDocs(query(collection(db, 'enrollments'), where('studentId', '==', studentId)));
+            const coursesList = document.getElementById('studentCoursesList');
+            
+            if (enrollmentSnap.empty) {
+                document.getElementById('studentTotalCourses').innerText = '0';
+                document.getElementById('studentTotalCredits').innerText = '0';
+                document.getElementById('studentAvgAttendance').innerText = 'N/A';
+                coursesList.innerHTML = '<div style="text-align:center; padding:30px; color:#94a3b8;">No courses enrolled yet.</div>';
+                openModal('studentProfileModal');
+                return;
+            }
+            
+            let totalCredits = 0;
+            let totalAttendance = 0;
+            let coursesWithAttendance = 0;
+            
+            const coursesHTML = await Promise.all(enrollmentSnap.docs.map(async (enrollDoc) => {
+                const enrollment = enrollDoc.data();
+                
+                // Get course details
+                const courseDoc = await getDoc(doc(db, 'courses', enrollment.courseId));
+                if (!courseDoc.exists()) return '';
+                
+                const course = courseDoc.data();
+                totalCredits += (course.credits || 3);
+                
+                // Get attendance for this course
+                let attendancePercent = 'N/A';
+                try {
+                    const attSnap = await getDocs(query(collection(db, 'courses', enrollment.courseId, 'attendance')));
+                    if (!attSnap.empty) {
+                        let present = 0;
+                        let total = 0;
+                        attSnap.docs.forEach(d => {
+                            const att = d.data();
+                            if (att.students && att.students[studentId] !== undefined) {
+                                total++;
+                                if (att.students[studentId]) present++;
+                            }
+                        });
+                        if (total > 0) {
+                            attendancePercent = Math.round((present / total) * 100) + '%';
+                            totalAttendance += (present / total) * 100;
+                            coursesWithAttendance++;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error getting attendance:', e);
+                }
+                
+                return `
+                    <div style="background:rgba(255,255,255,0.04); padding:18px; border-radius:14px; border:1px solid rgba(255,255,255,0.08); margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:start; gap:15px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:200px;">
+                                <h4 style="color:#60a5fa; margin-bottom:6px;">${course.code}</h4>
+                                <p style="font-size:14px; margin-bottom:8px;">${course.name}</p>
+                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                    <span class="badge bg-blue-soft">${course.credits || 3} Credits</span>
+                                    <span class="badge bg-green-soft">Attendance: ${attendancePercent}</span>
+                                </div>
+                            </div>
+                            <button class="action-btn danger" onclick="unenrollStudent('${studentId}', '${enrollment.courseId}', '${enrollDoc.id}')">Unenroll</button>
+                        </div>
+                    </div>
+                `;
+            }));
+            
+            document.getElementById('studentTotalCourses').innerText = enrollmentSnap.size;
+            document.getElementById('studentTotalCredits').innerText = totalCredits;
+            document.getElementById('studentAvgAttendance').innerText = coursesWithAttendance > 0 
+                ? Math.round(totalAttendance / coursesWithAttendance) + '%' 
+                : 'N/A';
+            
+            coursesList.innerHTML = coursesHTML.join('');
+            openModal('studentProfileModal');
+            
+        } catch (e) {
+            console.error('Error loading student profile:', e);
+            showToast('Error loading student profile', '#ef4444');
+        }
+    };
+
+    window.unenrollStudent = async (studentId, courseId, enrollmentId) => {
+        if (!confirm('Are you sure you want to unenroll this student from this course?')) return;
+        
+        try {
+            await deleteDoc(doc(db, 'enrollments', enrollmentId));
+            showToast('Student unenrolled successfully', '#10b981');
+            
+            // Refresh the student profile
+            showStudentProfile(studentId);
+            
+            // Refresh students table
+            renderStudents();
+        } catch (e) {
+            console.error('Error unenrolling student:', e);
+            showToast('Error unenrolling student', '#ef4444');
+        }
+    };
+
+    // =====================
+    // LOGOUT
+    // =====================
+    window.doLogout = async () => { await signOut(auth); window.location.href = 'index.html'; };
+
+    // =====================
+    // TOAST
+    // =====================
+    function showToast(msg, color = '#3b82f6') {
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.style.background = color;
+        t.innerText = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 3000);
+    }
+
+// Mobile Menu Toggle
+window.toggleMobileMenu = function() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.mobile-overlay');
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+};
+
+window.closeMobileMenu = function() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.mobile-overlay');
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
+};
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', function(event) {
+    const sidebar = document.querySelector('.sidebar');
+    const menuBtn = document.querySelector('.mobile-menu-btn');
+    
+    if (window.innerWidth <= 768) {
+        if (!sidebar.contains(event.target) && !menuBtn.contains(event.target)) {
+            closeMobileMenu();
+        }
+    }
+});
+
+// Close mobile menu when section is clicked
+document.querySelectorAll('.sidebar li').forEach(item => {
+    item.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+            closeMobileMenu();
+        }
+    });
+});
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        :root { 
+            --sidebar-width: 270px; 
+            --primary: #1e40af;
+            --primary-light: #3b82f6;
+            --secondary: #7c3aed;
+            --dark-bg: #0a0f1e;
+            --dark-secondary: #111827;
+            --dark-accent: #1e293b;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.06);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --neon-purple: #a78bfa;
+            --neon-blue: #60a5fa;
+            --accent-blue: #60a5fa;
+            --danger-red: #ef4444;
+        }
+        body { background: linear-gradient(135deg, var(--dark-bg), var(--dark-accent), var(--dark-secondary)); color: var(--text-primary); min-height: 100vh; display: flex; }
+        
+        /* Futuristic Grid Overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: 
+                linear-gradient(90deg, transparent 0%, rgba(124, 58, 237, 0.03) 50%, transparent 100%),
+                radial-gradient(circle at 15% 20%, rgba(30, 64, 175, 0.10) 0%, transparent 50%),
+                radial-gradient(circle at 85% 80%, rgba(124, 58, 237, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Animated scan lines for futuristic effect */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(124, 58, 237, 0.02) 2px,
+                rgba(124, 58, 237, 0.02) 4px
+            );
+            pointer-events: none;
+            z-index: 1;
+            animation: scanlines 15s linear infinite;
+        }
+
+        @keyframes scanlines {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100px); }
+        }
+        .sidebar { width: var(--sidebar-width); background: var(--glass); backdrop-filter: blur(20px); padding: 30px 20px; border-right: 1px solid var(--glass-border); position: fixed; height: 100vh; display: flex; flex-direction: column; z-index: 100; }
+        .sidebar h2 { margin-bottom: 40px; color: var(--accent-blue); font-size: 1.4rem; }
+        .sidebar ul { list-style: none; }
+        .sidebar li { padding: 14px; margin-bottom: 10px; border-radius: 12px; cursor: pointer; transition: 0.3s; color: var(--text-muted); font-size: 15px; }
+        .sidebar li:hover, .sidebar li.active { background: rgba(96,165,250,0.15); color: var(--neon-blue); transform: translateX(5px); }
+        .logout-btn { margin-top: auto; background: rgba(239,68,68,0.1); color: var(--danger-red); padding: 12px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s; border: 1px solid rgba(239,68,68,0.2); font-weight: 500; display: block; }
+        .logout-btn:hover { background: var(--danger-red); color: white; transform: translateY(-2px); }
+        .main { flex: 1; padding: 40px; margin-left: var(--sidebar-width); position: relative; z-index: 10; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .section { display: none; animation: fadeIn 0.4s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .card { background: var(--glass-hover); backdrop-filter: blur(20px); padding: 25px; border-radius: 18px; border: 1px solid var(--glass-border); transition: 0.4s; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.4); border-color: rgba(167,139,250,0.5); }
+        .card h3 { color: var(--accent-blue); margin-bottom: 5px; }
+        .badge { font-size: 0.7rem; padding: 3px 10px; border-radius: 20px; font-weight: 700; display: inline-block; }
+        .badge-enrolled { background: rgba(16,185,129,0.15); color: #10b981; }
+        .badge-catalog { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .badge-red { background: rgba(239,68,68,0.12); color: #ef4444; }
+        .badge-yellow { background: rgba(251,191,36,0.12); color: #fbbf24; }
+        .badge-green { background: rgba(16,185,129,0.15); color: #10b981; }
+        .badge-blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        button { padding: 10px 18px; border: none; border-radius: 10px; cursor: pointer; background: linear-gradient(135deg, var(--primary), var(--neon-purple)); color: white; font-weight: 500; transition: 0.3s; font-family: 'Poppins', sans-serif; }
+        button:hover { opacity: 0.9; transform: scale(1.02); }
+        button.secondary { background: var(--glass); border: 1px solid var(--glass-border); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-primary); outline: none; font-family: 'Poppins', sans-serif; }
+        .back-btn { color: var(--accent-blue); cursor: pointer; display: inline-block; margin-bottom: 20px; font-weight: 500; font-size: 14px; }
+        .catalog-panel { max-height: 0; overflow: hidden; transition: all 0.5s ease; opacity: 0; background: rgba(0,0,0,0.2); border-radius: 20px; }
+        .catalog-panel.show { max-height: 3000px; opacity: 1; margin-top: 30px; padding: 25px; border: 1px solid rgba(96,165,250,0.3); }
+        .loader { text-align: center; padding: 40px; color: #94a3b8; }
+        .empty-state { text-align: center; padding: 40px; color: #94a3b8; }
+        .instructor-label { color: #94a3b8; font-weight: 500; font-size: 13px; }
+        .announcement-item { background: rgba(96,165,250,0.05); border-left: 3px solid var(--accent-blue); padding: 15px 20px; border-radius: 0 10px 10px 0; margin-bottom: 15px; }
+        .a-course { font-size: 12px; color: var(--accent-blue); font-weight: 600; margin-bottom: 5px; }
+        .a-text { font-size: 14px; margin-bottom: 5px; }
+        .a-meta { font-size: 11px; color: #64748b; }
+        .enroll-card { background: rgba(255,255,255,0.06); padding: 22px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.09); transition: 0.35s; }
+        .enroll-card:hover { border-color: rgba(96,165,250,0.4); transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.3); }
+
+        /* COURSE DETAIL TABS */
+        .detail-tabs { display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; }
+        .detail-tab-btn { padding: 9px 18px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.06); color: #94a3b8; cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.25s; font-family: 'Poppins', sans-serif; }
+        .detail-tab-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+        .detail-tab-btn.active { background: var(--accent-blue); color: #0f172a; border-color: transparent; }
+
+        /* NOTES */
+        .note-file-item { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: rgba(255,255,255,0.04); border-radius: 14px; border: 1px solid rgba(255,255,255,0.07); margin-bottom: 10px; transition: 0.2s; }
+        .note-file-item:hover { border-color: rgba(96,165,250,0.3); }
+        .note-file-item .file-icon { font-size: 26px; flex-shrink: 0; }
+        .note-file-info { flex: 1; min-width: 0; }
+        .note-file-info .fname { font-size: 14px; font-weight: 600; }
+        .note-file-info .fmeta { font-size: 11px; color: #64748b; margin-top: 3px; }
+        .view-file-btn { background: rgba(96,165,250,0.15); color: var(--accent-blue); border: 1px solid rgba(96,165,250,0.3); padding: 8px 16px; border-radius: 9px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block; transition: 0.2s; white-space: nowrap; flex-shrink: 0; }
+        .view-file-btn:hover { background: rgba(96,165,250,0.25); }
+
+        /* ASSIGNMENTS */
+        .assign-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 14px; transition: 0.2s; }
+        .assign-card:hover { border-color: rgba(96,165,250,0.3); }
+        .assign-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+        .assign-desc { font-size: 13px; color: #94a3b8; margin-bottom: 12px; }
+        .deadline-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .deadline-chip.active { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.25); }
+        .deadline-chip.past { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+
+        /* SUBMISSION AREA */
+        .submission-area { margin-top: 16px; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.07); }
+        .submitted-indicator { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); border-radius: 10px; font-size: 13px; font-weight: 600; color: #10b981; }
+        .file-upload-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .file-upload-label { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); padding: 9px 16px; border-radius: 9px; cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.2s; white-space: nowrap; }
+        .file-upload-label:hover { background: rgba(255,255,255,0.12); }
+        .file-name-chip { font-size: 12px; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
+        .upload-progress { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.08); overflow: hidden; margin-top: 8px; display: none; }
+        .upload-progress-bar { height: 100%; background: var(--accent-blue); border-radius: 2px; transition: width 0.3s; width: 0%; }
+
+        /* ATTENDANCE */
+        .att-detail-bar { height: 10px; border-radius: 20px; background: rgba(255,255,255,0.08); overflow: hidden; margin: 8px 0; }
+        .att-detail-fill { height: 100%; border-radius: 20px; transition: width 0.8s ease; }
+        .att-breakdown-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+        .overall-att-card { background: rgba(255,255,255,0.07); padding: 25px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); transition: 0.4s; cursor: pointer; }
+        .overall-att-card:hover { border-color: rgba(96,165,250,0.5); transform: translateY(-5px); }
+
+        .toast { position: fixed; bottom: 25px; right: 25px; padding: 14px 22px; border-radius: 12px; color: white; font-weight: 600; font-size: 14px; z-index: 9999; animation: slideIn 0.3s ease; box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
+        @keyframes slideIn { from { transform: translateX(110px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        /* GRIEVANCE HISTORY */
+        .grievance-history-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; margin-bottom: 14px; }
+        .grievance-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
+        .grievance-subject { font-size: 16px; font-weight: 600; color: var(--accent-blue); }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .status-pending { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+        .status-resolved { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .grievance-course { font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
+        .grievance-desc { font-size: 13px; color: #cbd5e1; margin-bottom: 8px; }
+        .grievance-date { font-size: 11px; color: #64748b; }
+        
+        /* VAULT OF KNOWLEDGE */
+        .vault-item { display:flex; align-items:center; gap:14px; padding:16px 18px; background:rgba(255,255,255,0.04); border-radius:14px; border:1px solid rgba(255,255,255,0.07); margin-bottom:10px; transition:0.2s; }
+        .vault-item:hover { border-color:rgba(139,92,246,0.4); }
+        .vault-item .vault-icon { font-size:26px; flex-shrink:0; }
+        .vault-item-info { flex:1; min-width:0; }
+        .vault-item-info .vname { font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .vault-item-info .vmeta { font-size:11px; color:#64748b; margin-top:3px; }
+        .vault-tag { background:rgba(139,92,246,0.15); color:#a78bfa; border:1px solid rgba(139,92,246,0.25); padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap; }
+        .vault-filter-bar { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+        .vault-filter-btn { padding:6px 14px; border-radius:20px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#94a3b8; cursor:pointer; font-size:12px; font-weight:600; transition:0.2s; font-family:'Poppins',sans-serif; }
+        .vault-filter-btn:hover { background:rgba(255,255,255,0.1); color:white; }
+        .vault-filter-btn.active { background:rgba(139,92,246,0.2); color:#a78bfa; border-color:rgba(139,92,246,0.4); }
+        .vault-search { width:100%; padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.25); color:white; outline:none; font-family:'Poppins',sans-serif; margin-bottom:14px; font-size:13px; }
+
+        /* CHRONOS CALENDAR */
+        .cal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+        .cal-nav-btn { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1); color:white; padding:6px 14px; border-radius:8px; cursor:pointer; font-size:16px; transition:0.2s; font-family:'Poppins',sans-serif; }
+        .cal-nav-btn:hover { background:rgba(96,165,250,0.2); border-color:rgba(96,165,250,0.4); }
+        .cal-month-label { font-size:18px; font-weight:700; color:var(--accent-blue); }
+        .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+        .cal-day-label { text-align:center; font-size:11px; font-weight:700; color:#64748b; padding:6px 0; }
+        .cal-day { min-height:52px; border-radius:10px; padding:5px; position:relative; cursor:pointer; transition:0.2s; border:1px solid transparent; }
+        .cal-day:hover { background:rgba(255,255,255,0.06); border-color:rgba(96,165,250,0.3); }
+        .cal-day.today { background:rgba(96,165,250,0.12); border-color:rgba(96,165,250,0.4); }
+        .cal-day.other-month { opacity:0.35; }
+        .cal-day .day-num { font-size:13px; font-weight:600; margin-bottom:2px; }
+        .cal-day.today .day-num { color:var(--accent-blue); }
+        .cal-event-dot { width:100%; font-size:9px; font-weight:700; padding:1px 4px; border-radius:4px; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer; }
+        .cal-event-dot.type-exam { background:rgba(239,68,68,0.25); color:#f87171; }
+        .cal-event-dot.type-assignment { background:rgba(251,191,36,0.2); color:#fbbf24; }
+        .cal-event-dot.type-reminder { background:rgba(16,185,129,0.2); color:#10b981; }
+        .cal-event-dot.type-holiday { background:rgba(139,92,246,0.2); color:#a78bfa; }
+        .cal-event-dot.type-task { background:rgba(96,165,250,0.2); color:#60a5fa; }
+        .reminder-form { background:rgba(0,0,0,0.2); border-radius:12px; padding:16px; border:1px solid rgba(255,255,255,0.07); margin-bottom:16px; }
+        .event-legend { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+        .legend-item { display:flex; align-items:center; gap:5px; font-size:11px; color:#94a3b8; }
+        .legend-dot { width:10px; height:10px; border-radius:3px; }
+        .upcoming-event-item { display:flex; gap:12px; align-items:flex-start; padding:10px 12px; background:rgba(255,255,255,0.03); border-radius:10px; margin-bottom:8px; border-left:3px solid; }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--glass-hover);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            backdrop-filter: blur(20px);
+        }
+
+        /* Mobile Overlay */
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Responsive Styles */
+        @media(max-width: 1024px) {
+            .cards { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+            .main { padding: 30px 20px; }
+        }
+
+        @media(max-width: 768px) {
+            .mobile-menu-btn { display: block; }
+            
+            .sidebar { 
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1001;
+            }
+            
+            .sidebar.active { 
+                transform: translateX(0);
+                box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
+            }
+            
+            .main { 
+                margin-left: 0; 
+                padding: 80px 15px 20px 15px;
+                width: 100%;
+            }
+            
+            .cards { grid-template-columns: 1fr; }
+            .topbar { flex-direction: column; gap: 15px; align-items: stretch; }
+            
+            table { font-size: 13px; }
+            th, td { padding: 10px 8px; }
+            
+            .card { padding: 20px; }
+            button { font-size: 14px; padding: 8px 14px; }
+            
+            .cal-grid { gap: 3px; }
+            .cal-day { padding: 6px 4px; }
+            .cal-day .day-num { font-size: 12px; }
+            .cal-event-dot { font-size: 8px; padding: 1px 3px; }
+        }
+
+        @media(max-width: 480px) {
+            .main { padding: 70px 10px 15px 10px; }
+            
+            .sidebar h2 { font-size: 1.2rem; }
+            .sidebar li { padding: 12px; font-size: 14px; }
+            
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1.2rem; }
+            
+            .card h3 { font-size: 0.85rem; }
+            .badge { font-size: 0.65rem; padding: 2px 8px; }
+            
+            table { font-size: 12px; overflow-x: auto; display: block; }
+            th, td { padding: 8px 5px; }
+            
+            button { font-size: 13px; padding: 7px 12px; }
+            .action-buttons { flex-direction: column; gap: 5px; width: 100%; }
+            .action-buttons button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-overlay" onclick="closeMobileMenu()"></div>
+    
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+<div class="sidebar">
+    <h2>🎓 Student Panel</h2>
+    <ul>
+        <li class="active" id="nav-dashboard" onclick="showSection('dashboard', this)"><i class="fas fa-home" style="margin-right:10px;"></i>Dashboard</li>
+        <li id="nav-courses" onclick="showSection('courses', this)"><i class="fas fa-book" style="margin-right:10px;"></i>Enrolled Courses</li>
+        <li id="nav-attendance" onclick="showSection('attendance', this)"><i class="fas fa-check-circle" style="margin-right:10px;"></i>My Attendance</li>
+        <li id="nav-announcements" onclick="showSection('announcements', this)"><i class="fas fa-bullhorn" style="margin-right:10px;"></i>Announcements</li>
+        <li id="nav-academic" onclick="showSection('academic', this)"><i class="fas fa-graduation-cap" style="margin-right:10px;"></i>Academic Tracker</li>
+        <li id="nav-vault" onclick="showSection('vault', this)"><i class="fas fa-vault" style="margin-right:10px;"></i>Vault of Knowledge</li>
+        <li id="nav-calendar" onclick="showSection('calendar', this)"><i class="fas fa-calendar-alt" style="margin-right:10px;"></i>Calendar</li>
+        <li id="nav-research" onclick="showSection('research', this)"><i class="fas fa-flask" style="margin-right:10px;"></i>Research & Internships</li>
+        <li id="nav-grievance" onclick="showSection('grievance', this)"><i class="fas fa-edit" style="margin-right:10px;"></i>Grievance</li>
+    </ul>
+    <button class="logout-btn" onclick="doLogout()"><i class="fas fa-sign-out-alt" style="margin-right:8px;"></i>Logout</button>
+</div>
+
+<div class="main">
+    <div class="topbar">
+        <div>
+            <h1 id="welcomeText">Welcome Back 👋</h1>
+            <p id="studentEmail" style="color:#94a3b8; font-size:13px; margin-top:4px;"></p>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="section active">
+        <div class="cards">
+            <div class="card" onclick="showSection('courses', document.getElementById('nav-courses'))" style="cursor:pointer;"><h3>📚 <span id="dashCourseCount">—</span> Courses</h3><p style="color:#94a3b8; font-size:13px; margin-top:5px;">Active enrollment</p></div>
+            <div class="overall-att-card" onclick="showSection('attendance', document.getElementById('nav-attendance'))">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><h3 style="color:var(--accent-blue); margin-bottom:5px;">📊 Attendance</h3><p style="font-size:24px; font-weight:800; margin:5px 0;" id="dash-overall-pct">—</p><p style="color:#94a3b8; font-size:12px;" id="dash-att-detail">across all courses</p></div>
+                    <svg width="70" height="70" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="6"/><circle cx="35" cy="35" r="28" fill="none" stroke="#10b981" stroke-width="6" stroke-linecap="round" stroke-dasharray="175.9" stroke-dashoffset="175.9" id="dash-att-ring" style="transform-origin:35px 35px; transform:rotate(-90deg); transition:stroke-dashoffset 1s ease;"/><text x="35" y="33" text-anchor="middle" font-family="Poppins" font-size="12" font-weight="800" fill="white" id="dash-ring-pct">—</text><text x="35" y="44" text-anchor="middle" font-family="Poppins" font-size="8" fill="#94a3b8">avg</text></svg>
+                </div>
+            </div>
+            <div class="card"><h3>📝 <span id="dashPendingAssign">—</span> Assignments</h3><p style="color:#94a3b8; font-size:13px; margin-top:5px;">Pending submissions</p></div>
+            <div class="card" onclick="showSection('announcements', document.getElementById('nav-announcements'))" style="cursor:pointer;"><h3>🔔 <span id="dashAnnouncementCount">—</span> Announcements</h3><p style="color:#94a3b8; font-size:13px; margin-top:5px;">From your courses</p></div>
+        </div>
+    </div>
+
+    <!-- COURSES -->
+    <div id="courses" class="section">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+            <h2>My Enrolled Courses</h2>
+            <button onclick="toggleCatalog()" id="catalogBtn">+ Explore All Courses</button>
+        </div>
+        <div id="enrolledLoader" class="loader">Loading your courses...</div>
+        <div id="enrolledGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:20px;"></div>
+        <div id="catalogPanel" class="catalog-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                <h3>📖 Course Catalog</h3>
+                <input type="text" id="searchInput" placeholder="🔍 Search courses..." onkeyup="searchCatalog()" style="width:280px; margin-bottom:0;">
+            </div>
+            <div id="catalogGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:20px;"></div>
+        </div>
+    </div>
+
+    <!-- COURSE DETAIL -->
+    <div id="courseDetail" class="section">
+        <div class="back-btn" onclick="showSection('courses', document.getElementById('nav-courses'))">← Back to My Courses</div>
+        <h1 id="detailTitle" style="margin-bottom:5px; color:var(--accent-blue);"></h1>
+        <p id="detailStaff" style="margin-bottom:22px; opacity:0.7; font-size:14px;"></p>
+        <div class="detail-tabs">
+            <button class="detail-tab-btn active" id="dtab-btn-overview" onclick="switchDetailTab('overview')">📋 Overview</button>
+            <button class="detail-tab-btn" id="dtab-btn-notes" onclick="switchDetailTab('notes')">📂 Notes</button>
+            <button class="detail-tab-btn" id="dtab-btn-assignments" onclick="switchDetailTab('assignments')">📝 Assignments</button>
+            <button class="detail-tab-btn" id="dtab-btn-announcements" onclick="switchDetailTab('announcements')">📢 Announcements</button>
+        </div>
+        <!-- OVERVIEW -->
+        <div id="dtab-overview">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:20px;">
+                <div class="card"><h3>📊 Your Attendance</h3><div id="courseDetailAttContent" style="margin-top:12px;"><p style="color:#94a3b8; font-size:13px;">Loading...</p></div></div>
+                <div class="card"><h3>📝 Assignments</h3><p id="courseDetailAssignSummary" style="color:#94a3b8; font-size:13px; margin-top:8px;">Loading...</p></div>
+                <div class="card"><h3>📂 Notes</h3><p id="courseDetailNotesSummary" style="color:#94a3b8; font-size:13px; margin-top:8px;">Loading...</p></div>
+            </div>
+        </div>
+        <!-- NOTES TAB -->
+        <div id="dtab-notes" style="display:none;">
+            <h3 style="margin-bottom:16px; color:var(--accent-blue);">📂 Course Notes & Materials</h3>
+            <div id="student-notes-list"><div class="loader">Loading notes...</div></div>
+        </div>
+        <!-- ASSIGNMENTS TAB -->
+        <div id="dtab-assignments" style="display:none;">
+            <h3 style="margin-bottom:16px; color:var(--accent-blue);">📝 Assignments</h3>
+            <div id="student-assignments-list"><div class="loader">Loading assignments...</div></div>
+        </div>
+        <!-- ANNOUNCEMENTS TAB -->
+        <div id="dtab-announcements" style="display:none;">
+            <h3 style="margin-bottom:16px; color:var(--accent-blue);">📢 Course Announcements</h3>
+            <div id="courseAnnouncementList"><div class="loader">Loading...</div></div>
+        </div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div id="attendance" class="section">
+        <h2 style="margin-bottom:8px;">📊 My Attendance</h2>
+        <p style="color:#94a3b8; font-size:13px; margin-bottom:28px;">Updated after each class is marked by your instructor</p>
+        <div id="attLoader" class="loader">Loading...</div>
+        <div id="attOverallCard" style="display:none; background:rgba(255,255,255,0.06); padding:25px; border-radius:18px; border:1px solid rgba(255,255,255,0.1); margin-bottom:28px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;">
+                <div><h3 style="color:var(--accent-blue); margin-bottom:6px;">Overall Attendance</h3><p style="font-size:13px; color:#94a3b8;" id="att-overall-subtitle">—</p></div>
+                <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+                    <div style="text-align:center;"><p style="font-size:36px; font-weight:800;" id="att-overall-pct">—</p><p style="font-size:12px; color:#94a3b8;">Overall %</p></div>
+                    <div style="text-align:center;"><p style="font-size:22px; font-weight:700; color:#10b981;" id="att-overall-present">—</p><p style="font-size:12px; color:#94a3b8;">Present</p></div>
+                    <div style="text-align:center;"><p style="font-size:22px; font-weight:700; color:#94a3b8;" id="att-overall-total">—</p><p style="font-size:12px; color:#94a3b8;">Total</p></div>
+                </div>
+            </div>
+        </div>
+        <div id="attGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:20px;"></div>
+        <div id="attEmpty" style="display:none;" class="empty-state"><div style="font-size:48px; margin-bottom:15px;">📋</div><h3 style="color:var(--accent-blue);">No Attendance Data Yet</h3><p style="margin-top:8px;">Your instructor hasn't taken attendance yet.</p></div>
+    </div>
+
+    <!-- ANNOUNCEMENTS -->
+    <div id="announcements" class="section">
+        <h2 style="margin-bottom:25px;">📢 All Announcements</h2>
+        <div id="allAnnouncementsLoader" class="loader">Loading...</div>
+        <div id="allAnnouncementsList"></div>
+    </div>
+
+    <!-- RESEARCH & INTERNSHIPS -->
+    <div id="research" class="section">
+        <h2 style="margin-bottom:25px;">🔬 Research & Internship Opportunities</h2>
+        <div id="researchOpportunitiesList"></div>
+        
+        <h2 style="margin-top:40px; margin-bottom:20px;">My Applications</h2>
+        <div id="myApplicationsList"></div>
+    </div>
+
+    <!-- ACADEMIC TRACKER -->
+    <div id="academic" class="section">
+        <h2 style="margin-bottom:25px;">🎯 The Destiny Manager - Academic Tracker</h2>
+        
+        <!-- Credit Calculator -->
+        <div class="card" style="margin-bottom:25px;">
+            <h3 style="margin-bottom:15px; color:var(--accent-blue);">📊 Credit Calculator & Course Summary</h3>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom:20px;">
+                <div style="background:rgba(96,165,250,0.1); padding:18px; border-radius:12px; border:1px solid rgba(96,165,250,0.2);">
+                    <p style="font-size:12px; color:#94a3b8; margin-bottom:5px;">Total Courses</p>
+                    <p style="font-size:28px; font-weight:700; color:#60a5fa;" id="totalCoursesCount">0</p>
+                </div>
+                <div style="background:rgba(16,185,129,0.1); padding:18px; border-radius:12px; border:1px solid rgba(16,185,129,0.2);">
+                    <p style="font-size:12px; color:#94a3b8; margin-bottom:5px;">Total Credits</p>
+                    <p style="font-size:28px; font-weight:700; color:#10b981;" id="totalCreditsCount">0</p>
+                </div>
+                <div style="background:rgba(251,191,36,0.1); padding:18px; border-radius:12px; border:1px solid rgba(251,191,36,0.2);">
+                    <p style="font-size:12px; color:#94a3b8; margin-bottom:5px;">Overall Attendance</p>
+                    <p style="font-size:28px; font-weight:700; color:#fbbf24;" id="overallAttendancePercent">0%</p>
+                </div>
+            </div>
+            <div id="courseBreakdownList"></div>
+        </div>
+        
+        <!-- Scholar's Ledger - Personal Task Manager -->
+        <div class="card">
+            <h3 style="margin-bottom:15px; color:var(--accent-blue);">📝 The Scholar's Ledger - My Academic Tasks</h3>
+            <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+                <input type="text" id="taskTitle" placeholder="Task title..." style="flex:2; min-width:200px; margin-bottom:0;">
+                <input type="date" id="taskDeadline" style="flex:1; min-width:150px; margin-bottom:0;">
+                <select id="taskPriority" style="flex:1; min-width:120px; margin-bottom:0;">
+                    <option value="Low">🟢 Low</option>
+                    <option value="Medium" selected>🟡 Medium</option>
+                    <option value="High">🔴 High</option>
+                </select>
+                <button onclick="addTask()" style="margin-bottom:0;">+ Add Task</button>
+            </div>
+            <div id="tasksList"></div>
+        </div>
+    </div>
+
+    <!-- VAULT OF KNOWLEDGE -->
+    <div id="vault" class="section">
+        <h2 style="margin-bottom:5px; color:#a78bfa;">🗄️ The Vault of Knowledge</h2>
+        <p style="font-size:13px; color:#64748b; margin-bottom:22px;">Previous year papers, study materials & resources shared by faculty and admin</p>
+        <input class="vault-search" id="vaultSearch" placeholder="🔍 Search materials..." oninput="filterVault()">
+        <div class="vault-filter-bar" id="vaultFilterBar">
+            <button class="vault-filter-btn active" onclick="setVaultFilter('all', this)">All</button>
+            <button class="vault-filter-btn" onclick="setVaultFilter('PYQ', this)">📄 PYQ</button>
+            <button class="vault-filter-btn" onclick="setVaultFilter('Notes', this)">📝 Notes</button>
+            <button class="vault-filter-btn" onclick="setVaultFilter('Textbook', this)">📚 Textbook</button>
+            <button class="vault-filter-btn" onclick="setVaultFilter('Other', this)">📌 Other</button>
+        </div>
+        <div id="vaultList"><div class="loader">Loading vault...</div></div>
+    </div>
+
+    <!-- CHRONOS CALENDAR -->
+    <div id="calendar" class="section">
+        <h2 style="margin-bottom:5px; color:#f59e0b;">🗓️ Chronos Calendar</h2>
+        <p style="font-size:13px; color:#64748b; margin-bottom:22px;">Personalized reminders, deadlines & academic events</p>
+        <div class="event-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(239,68,68,0.5);"></div>Exam</div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(251,191,36,0.5);"></div>Assignment</div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(96,165,250,0.5);"></div>Task</div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(16,185,129,0.5);"></div>Reminder</div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(139,92,246,0.5);"></div>Holiday</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.2); border-radius:14px; padding:18px; margin-bottom:20px; border:1px solid rgba(255,255,255,0.06);">
+            <div class="cal-header">
+                <button class="cal-nav-btn" onclick="changeCalMonth(-1)">‹</button>
+                <span class="cal-month-label" id="calMonthLabel">—</span>
+                <button class="cal-nav-btn" onclick="changeCalMonth(1)">›</button>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+        </div>
+        <div class="reminder-form">
+            <h4 style="margin-bottom:12px; font-size:14px; color:#94a3b8;">+ Add Personal Reminder</h4>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <input type="text" id="reminderTitle" placeholder="Reminder title..." style="flex:2; min-width:180px; margin-bottom:0; padding:10px 12px; font-size:13px;">
+                <input type="date" id="reminderDate" style="flex:1; min-width:140px; margin-bottom:0; padding:10px 12px; font-size:13px;">
+                <select id="reminderType" style="flex:1; min-width:120px; margin-bottom:0; padding:10px 12px; font-size:13px;">
+                    <option value="reminder">🟢 Reminder</option>
+                    <option value="task">🔵 Task</option>
+                    <option value="holiday">🟣 Holiday</option>
+                </select>
+                <button onclick="addReminder()" style="margin-bottom:0; padding:10px 16px; font-size:13px;">Add</button>
+            </div>
+        </div>
+        <h4 style="margin-bottom:12px; font-size:14px; color:#94a3b8;">📋 Upcoming Events (Next 30 Days)</h4>
+        <div id="upcomingEventsList"></div>
+    </div>
+
+    <!-- GRIEVANCE -->
+    <div id="grievance" class="section">
+        <div class="card" style="max-width:700px; margin:0 auto;">
+            <h3 style="margin-bottom:20px;">📜 The Silent Scroll - Submit a Grievance</h3>
+            
+            <label style="display:block; margin-bottom:8px; font-size:13px; color:#94a3b8;">Anonymous Submission</label>
+            <label style="display:flex; align-items:center; gap:10px; margin-bottom:15px; cursor:pointer;">
+                <input type="checkbox" id="grievanceAnonymous" style="width:auto; margin:0;">
+                <span style="font-size:14px;">Submit anonymously (your identity will be hidden)</span>
+            </label>
+            
+            <label style="display:block; margin-bottom:8px; font-size:13px; color:#94a3b8;">Related Course</label>
+            <select id="grievanceCourseSelect" style="margin-bottom:15px;"></select>
+            
+            <label style="display:block; margin-bottom:8px; font-size:13px; color:#94a3b8;">Category</label>
+            <select id="grievanceCategory" style="margin-bottom:15px;">
+                <option value="">Select Category</option>
+                <option value="Academic">📚 Academic</option>
+                <option value="Infrastructure">🏢 Infrastructure</option>
+                <option value="Faculty">👨‍🏫 Faculty Related</option>
+                <option value="Administration">📋 Administration</option>
+                <option value="Hostel">🏠 Hostel/Accommodation</option>
+                <option value="Food">🍽️ Food/Mess</option>
+                <option value="Health">⚕️ Health & Safety</option>
+                <option value="Other">📌 Other</option>
+            </select>
+            
+            <label style="display:block; margin-bottom:8px; font-size:13px; color:#94a3b8;">Priority</label>
+            <select id="grievancePriority" style="margin-bottom:15px;">
+                <option value="Low">🟢 Low</option>
+                <option value="Medium" selected>🟡 Medium</option>
+                <option value="High">🔴 High</option>
+                <option value="Critical">🚨 Critical</option>
+            </select>
+            
+            <label style="display:block; margin-bottom:8px; font-size:13px; color:#94a3b8;">Location (Optional)</label>
+            <input type="text" id="grievanceLocation" placeholder="e.g., Library Block A, Room 203" style="margin-bottom:15px;">
+            
+            <label style="display:block; margin-bottom:8px; font-size:13px; color:#94a3b8;">Subject</label>
+            <input type="text" id="grievanceSubject" placeholder="Brief subject" style="margin-bottom:15px;">
+            
+            <label style="display:block; margin-bottom:8px; font-size:13px; color:#94a3b8;">Description</label>
+            <textarea id="grievanceDesc" placeholder="Describe your issue in detail..." style="height:120px; margin-bottom:15px;"></textarea>
+            
+            <button id="submitGrievanceBtn" onclick="submitGrievance()" style="width:100%;">Submit Grievance</button>
+        </div>
+        
+        <h2 style="margin-top: 40px; margin-bottom: 20px; color: var(--accent-blue);">👁️ The Watcher's Eye - My Grievance History</h2>
+        <div id="grievanceHistoryList" style="max-width:900px; margin:0 auto;"></div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import {
+        getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc,
+        addDoc, onSnapshot, query, where, updateDoc, increment, serverTimestamp, orderBy
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBxCc7lG8NZ6v7gOtFvugEUk2x9GExFMOA",
+        authDomain: "krackhack-b3b15.firebaseapp.com",
+        projectId: "krackhack-b3b15",
+        storageBucket: "krackhack-b3b15.firebasestorage.app",
+        messagingSenderId: "902045796437",
+        appId: "1:902045796437:web:0344f8a2cbe168e8572cdc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    let currentUser = null, currentUserData = null;
+    let enrolledCourseIds = [], enrolledCoursesData = [], allCatalogCourses = [];
+    let attendanceSummaries = {};
+    let currentDetailCourseId = null;
+    const selectedFiles = {}; // assignmentId -> File
+
+    // AUTH
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = 'index.html'; return; }
+        const uDoc = await getDoc(doc(db, 'users', user.uid));
+        if (!uDoc.exists() || uDoc.data().role !== 'student') { window.location.href = 'index.html'; return; }
+        currentUser = user;
+        currentUserData = { uid: user.uid, ...uDoc.data() };
+        document.getElementById('welcomeText').innerText = `Welcome Back, ${currentUserData.name} 👋`;
+        document.getElementById('studentEmail').innerText = currentUser.email;
+        loadEnrollments();
+        loadAllCourses();
+        loadPendingRequests();
+        listenAttendanceSummaries();
+    });
+
+    // LOAD PENDING ENROLLMENT REQUESTS
+    function loadPendingRequests() {
+        onSnapshot(query(collection(db, 'enrollmentRequests'), 
+            where('studentId', '==', currentUser.uid), 
+            where('status', '==', 'pending')), (snap) => {
+            pendingRequestCourseIds = snap.docs.map(d => d.data().courseId);
+            renderCatalog();
+        });
+    }
+
+    // ENROLLMENTS
+    function loadEnrollments() {
+        onSnapshot(query(collection(db, 'enrollments'), where('studentId', '==', currentUser.uid)), async (snap) => {
+            enrolledCourseIds = snap.docs.map(d => d.data().courseId);
+            enrolledCoursesData = [];
+            for (const cid of enrolledCourseIds) {
+                const cDoc = await getDoc(doc(db, 'courses', cid));
+                if (cDoc.exists()) enrolledCoursesData.push({ id: cDoc.id, ...cDoc.data() });
+            }
+            document.getElementById('dashCourseCount').innerText = enrolledCoursesData.length;
+            document.getElementById('enrolledLoader').style.display = 'none';
+            renderEnrolled();
+            renderCatalog();
+            updateGrievanceDropdown();
+            loadAllAnnouncements();
+            countPendingAssignments();
+        });
+    }
+
+    function loadAllCourses() {
+        onSnapshot(collection(db, 'courses'), (snap) => {
+            allCatalogCourses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderCatalog();
+        });
+    }
+
+    // PENDING ASSIGNMENTS COUNT
+    async function countPendingAssignments() {
+        let pending = 0;
+        for (const cid of enrolledCourseIds) {
+            const aSnap = await getDocs(collection(db, 'courses', cid, 'assignments'));
+            for (const aDoc of aSnap.docs) {
+                const a = aDoc.data();
+                if (a.deadline && new Date(a.deadline) > new Date()) {
+                    const subSnap = await getDoc(doc(db, 'courses', cid, 'assignments', aDoc.id, 'submissions', currentUser.uid));
+                    if (!subSnap.exists()) pending++;
+                }
+            }
+        }
+        document.getElementById('dashPendingAssign').innerText = pending;
+    }
+
+    // ATTENDANCE
+    function listenAttendanceSummaries() {
+        onSnapshot(query(collection(db, 'attendanceSummary'), where('studentId', '==', currentUser.uid)), (snap) => {
+            attendanceSummaries = {};
+            snap.docs.forEach(d => { const data = d.data(); attendanceSummaries[data.courseId] = data; });
+            renderAttendancePage();
+            updateDashboardAttCard();
+            if (enrolledCoursesData.length) renderEnrolled();
+        });
+    }
+
+    function computeOverall() {
+        const s = Object.values(attendanceSummaries);
+        if (!s.length) return { pct: null, present: 0, total: 0 };
+        let tp = 0, tt = 0;
+        s.forEach(x => { tp += x.presentClasses || 0; tt += x.totalClasses || 0; });
+        return { pct: tt ? Math.round((tp / tt) * 100) : 0, present: tp, total: tt };
+    }
+
+    function updateDashboardAttCard() {
+        const { pct, present, total } = computeOverall();
+        if (pct === null) { document.getElementById('dash-overall-pct').innerText = '—'; return; }
+        const color = pct >= 75 ? '#10b981' : pct >= 50 ? '#fbbf24' : '#ef4444';
+        document.getElementById('dash-overall-pct').innerText = pct + '%';
+        document.getElementById('dash-overall-pct').style.color = color;
+        document.getElementById('dash-att-detail').innerText = `${present} present / ${total} total classes`;
+        document.getElementById('dash-ring-pct').innerText = pct + '%';
+        document.getElementById('dash-ring-pct').style.fill = color;
+        const ring = document.getElementById('dash-att-ring');
+        ring.style.stroke = color;
+        ring.style.strokeDashoffset = 175.9 - (pct / 100) * 175.9;
+    }
+
+    function renderAttendancePage() {
+        const grid = document.getElementById('attGrid');
+        document.getElementById('attLoader').style.display = 'none';
+        const relevant = Object.values(attendanceSummaries).filter(s => enrolledCourseIds.includes(s.courseId));
+        if (!relevant.length) { grid.innerHTML = ''; document.getElementById('attOverallCard').style.display = 'none'; document.getElementById('attEmpty').style.display = 'block'; return; }
+        document.getElementById('attEmpty').style.display = 'none';
+        document.getElementById('attOverallCard').style.display = 'block';
+        const { pct, present, total } = computeOverall();
+        const oColor = pct >= 75 ? '#10b981' : pct >= 50 ? '#fbbf24' : '#ef4444';
+        document.getElementById('att-overall-pct').innerText = pct + '%'; document.getElementById('att-overall-pct').style.color = oColor;
+        document.getElementById('att-overall-present').innerText = present; document.getElementById('att-overall-total').innerText = total;
+        document.getElementById('att-overall-subtitle').innerText = `${enrolledCoursesData.length} courses enrolled`;
+        grid.innerHTML = relevant.map(s => {
+            const p = s.totalClasses ? Math.round((s.presentClasses / s.totalClasses) * 100) : 0;
+            const absent = (s.totalClasses || 0) - (s.presentClasses || 0);
+            const c = p >= 75 ? '#10b981' : p >= 50 ? '#fbbf24' : '#ef4444';
+            const circ = 201.1; const off = circ - (p / 100) * circ;
+            return `<div class="card" style="padding:22px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+                    <div style="flex:1; padding-right:12px;"><span style="font-size:11px; font-weight:700; color:var(--accent-blue); background:rgba(96,165,250,0.12); padding:3px 9px; border-radius:20px;">${s.courseCode||''}</span><h4 style="margin-top:8px; margin-bottom:4px;">${s.courseName}</h4><p style="font-size:12px; color:#64748b;">by ${s.facultyName||'—'}</p></div>
+                    <svg width="80" height="80" viewBox="0 0 80 80" style="flex-shrink:0;"><circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="7"/><circle cx="40" cy="40" r="32" fill="none" stroke="${c}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${off}" style="transform-origin:40px 40px; transform:rotate(-90deg); transition:stroke-dashoffset 1s ease;"/><text x="40" y="37" text-anchor="middle" font-family="Poppins" font-size="13" font-weight="800" fill="${c}">${p}%</text><text x="40" y="51" text-anchor="middle" font-family="Poppins" font-size="8" fill="#94a3b8">attend.</text></svg>
+                </div>
+                <div class="att-detail-bar"><div class="att-detail-fill" style="width:${p}%; background:${c};"></div></div>
+                <div style="display:flex; justify-content:space-between; margin-top:12px; font-size:13px;">
+                    <div style="text-align:center;"><p style="font-weight:700; color:#10b981; font-size:16px;">${s.presentClasses||0}</p><p style="color:#64748b; font-size:11px;">Present</p></div>
+                    <div style="text-align:center;"><p style="font-weight:700; color:#ef4444; font-size:16px;">${absent}</p><p style="color:#64748b; font-size:11px;">Absent</p></div>
+                    <div style="text-align:center;"><p style="font-weight:700; color:#94a3b8; font-size:16px;">${s.totalClasses||0}</p><p style="color:#64748b; font-size:11px;">Total</p></div>
+                </div>
+                <div style="margin-top:12px; padding:8px 12px; border-radius:8px; background:${c}18; border:1px solid ${c}33; font-size:12px; font-weight:600; color:${c}; text-align:center;">${p >= 75 ? '✓ Good standing' : p >= 50 ? '⚠ At risk' : '✗ Below minimum'}</div>
+            </div>`;
+        }).join('');
+    }
+
+    // ENROLLED
+    function renderEnrolled() {
+        const grid = document.getElementById('enrolledGrid');
+        if (!enrolledCoursesData.length) { grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div style="font-size:48px;margin-bottom:15px;">🎓</div><h3 style="color:var(--accent-blue);">Not enrolled yet</h3><p style="margin-top:8px;">Click "Explore All Courses" to enroll.</p></div>`; return; }
+        grid.innerHTML = enrolledCoursesData.map(c => {
+            const s = attendanceSummaries[c.id];
+            const p = s && s.totalClasses ? Math.round((s.presentClasses / s.totalClasses) * 100) : null;
+            const ac = p === null ? '#64748b' : p >= 75 ? '#10b981' : p >= 50 ? '#fbbf24' : '#ef4444';
+            return `<div class="enroll-card"><span class="badge badge-enrolled" style="margin-bottom:10px;">Enrolled</span>
+                <h3 style="color:var(--accent-blue); margin-bottom:4px;">${c.code}: ${c.name}</h3>
+                <div style="font-size:13px; margin:10px 0; line-height:1.7;"><p><span class="instructor-label">Instructor:</span> ${c.facultyName||'TBD'}</p><p><span class="instructor-label">Schedule:</span> ${c.schedule||'TBD'}</p></div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding:8px 12px; background:rgba(0,0,0,0.2); border-radius:8px;">
+                    <span style="font-size:13px;">📊</span>
+                    <div style="flex:1;"><div style="height:5px; border-radius:10px; background:rgba(255,255,255,0.08); overflow:hidden;"><div style="height:100%; width:${p||0}%; background:${ac}; border-radius:10px;"></div></div></div>
+                    <span style="font-size:12px; font-weight:700; color:${ac}; min-width:55px; text-align:right;">${p !== null ? p + '%' : 'No data'}</span>
+                </div>
+                <div style="display:flex; gap:10px;"><button onclick="enterCourse('${c.id}')" style="flex:2;">Enter Course</button><button class="secondary" onclick="dropCourse('${c.id}','${c.name}')" style="flex:1;">Drop</button></div>
+            </div>`;
+        }).join('');
+    }
+
+    // CATALOG
+    window.toggleCatalog = () => { const p = document.getElementById('catalogPanel'), b = document.getElementById('catalogBtn'); p.classList.toggle('show'); b.innerText = p.classList.contains('show') ? '✕ Close Catalog' : '+ Explore All Courses'; };
+    
+    let pendingRequestCourseIds = [];
+    
+    function renderCatalog(filter = '') {
+        const grid = document.getElementById('catalogGrid');
+        const available = allCatalogCourses.filter(c => !enrolledCourseIds.includes(c.id) && (!filter || c.name?.toLowerCase().includes(filter) || c.code?.toLowerCase().includes(filter)));
+        if (!available.length) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">No courses available right now.</div>'; return; }
+        grid.innerHTML = available.map(c => {
+            const hasPending = pendingRequestCourseIds.includes(c.id);
+            return `<div class="enroll-card">
+                <span class="badge badge-catalog" style="margin-bottom:10px;">${c.code||'Course'}</span>
+                <h3 style="color:var(--accent-blue); margin-bottom:5px;">${c.name}</h3>
+                <div style="font-size:13px; margin:10px 0; line-height:1.6;">
+                    <p><span class="instructor-label">Instructor:</span> ${c.facultyName||'TBD'}</p>
+                    <p><span class="instructor-label">Schedule:</span> ${c.schedule||'TBD'}</p>
+                    <p style="color:#94a3b8; font-size:12px; margin-top:4px;">${c.description||''}</p>
+                </div>
+                ${hasPending 
+                    ? '<button disabled style="width:100%; margin-top:8px; opacity:0.6; cursor:not-allowed; background:#fbbf24;">⏳ Approval Pending</button>'
+                    : `<button onclick="enroll('${c.id}')" style="width:100%; margin-top:8px;">Enroll Now</button>`
+                }
+            </div>`;
+        }).join('');
+    }
+    window.searchCatalog = () => renderCatalog(document.getElementById('searchInput').value.toLowerCase());
+
+    window.enroll = async (courseId) => {
+        const course = allCatalogCourses.find(c => c.id === courseId);
+        if (!course) return;
+        try {
+            // Create enrollment request instead of direct enrollment
+            await addDoc(collection(db, 'enrollmentRequests'), {
+                studentId: currentUser.uid,
+                studentName: currentUserData.name,
+                studentEmail: currentUserData.email,
+                courseId: courseId,
+                courseName: course.name,
+                courseCode: course.code,
+                facultyId: course.facultyId,
+                facultyName: course.facultyName,
+                status: 'pending',
+                requestedAt: serverTimestamp()
+            });
+            showToast(`Enrollment request sent for ${course.name}!`, '#3b82f6');
+        } catch (e) { 
+            console.error('Error creating enrollment request:', e);
+            showToast('Error sending request', '#ef4444'); 
+        }
+    };
+    window.dropCourse = async (courseId, courseName) => {
+        if (!confirm(`Drop "${courseName}"?`)) return;
+        try {
+            await deleteDoc(doc(db, 'enrollments', `${currentUser.uid}_${courseId}`));
+            await updateDoc(doc(db, 'courses', courseId), { enrolledCount: increment(-1) });
+            showToast(`${courseName} dropped.`, '#f59e0b');
+        } catch (e) { showToast('Error', '#ef4444'); }
+    };
+
+    // ENTER COURSE DETAIL
+    window.enterCourse = (courseId) => {
+        const course = enrolledCoursesData.find(c => c.id === courseId);
+        if (!course) return;
+        currentDetailCourseId = courseId;
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById('courseDetail').classList.add('active');
+        document.getElementById('detailTitle').innerText = `${course.code}: ${course.name}`;
+        document.getElementById('detailStaff').innerText = `Instructor: ${course.facultyName||'TBD'} | ${course.schedule||'TBD'}`;
+        switchDetailTab('overview');
+    };
+
+    window.switchDetailTab = (tab) => {
+        ['overview', 'notes', 'assignments', 'announcements'].forEach(t => {
+            document.getElementById(`dtab-${t}`).style.display = 'none';
+            document.getElementById(`dtab-btn-${t}`).classList.remove('active');
+        });
+        document.getElementById(`dtab-${tab}`).style.display = 'block';
+        document.getElementById(`dtab-btn-${tab}`).classList.add('active');
+        if (tab === 'overview') loadDetailOverview(currentDetailCourseId);
+        if (tab === 'notes') loadStudentNotes(currentDetailCourseId);
+        if (tab === 'assignments') loadStudentAssignments(currentDetailCourseId);
+        if (tab === 'announcements') loadCourseAnnouncements(currentDetailCourseId);
+    };
+
+    function loadDetailOverview(courseId) {
+        renderCourseDetailAttendance(courseId);
+        loadDetailNotesSummary(courseId);
+        loadDetailAssignSummary(courseId);
+    }
+
+    function renderCourseDetailAttendance(courseId) {
+        const container = document.getElementById('courseDetailAttContent');
+        const s = attendanceSummaries[courseId];
+        if (!s || !s.totalClasses) { container.innerHTML = '<p style="color:#94a3b8; font-size:13px;">No attendance recorded yet.</p>'; return; }
+        const p = Math.round((s.presentClasses / s.totalClasses) * 100);
+        const c = p >= 75 ? '#10b981' : p >= 50 ? '#fbbf24' : '#ef4444';
+        container.innerHTML = `<p style="font-size:28px; font-weight:800; color:${c};">${p}%</p><div class="att-detail-bar" style="margin:8px 0;"><div class="att-detail-fill" style="width:${p}%; background:${c};"></div></div><div class="att-breakdown-row"><span style="color:#94a3b8;">Present</span><span style="color:#10b981; font-weight:600;">${s.presentClasses}</span></div><div class="att-breakdown-row"><span style="color:#94a3b8;">Absent</span><span style="color:#ef4444; font-weight:600;">${s.totalClasses - s.presentClasses}</span></div><div class="att-breakdown-row" style="border:none;"><span style="color:#94a3b8;">Total</span><span style="font-weight:600;">${s.totalClasses}</span></div>`;
+    }
+
+    async function loadDetailNotesSummary(courseId) {
+        const snap = await getDocs(collection(db, 'courses', courseId, 'notes'));
+        document.getElementById('courseDetailNotesSummary').innerText = snap.size ? `${snap.size} file${snap.size !== 1 ? 's' : ''} available` : 'No notes uploaded yet.';
+    }
+
+    async function loadDetailAssignSummary(courseId) {
+        const snap = await getDocs(collection(db, 'courses', courseId, 'assignments'));
+        const active = snap.docs.filter(d => { const dl = d.data().deadline; return dl && new Date(dl) > new Date(); });
+        document.getElementById('courseDetailAssignSummary').innerText = active.length ? `${active.length} active assignment${active.length !== 1 ? 's' : ''}` : 'No active assignments.';
+    }
+
+    // STUDENT NOTES VIEW
+    function loadStudentNotes(courseId) {
+        const list = document.getElementById('student-notes-list');
+        onSnapshot(query(collection(db, 'courses', courseId, 'notes'), orderBy('uploadedAt', 'desc')), (snap) => {
+            if (snap.empty) { list.innerHTML = '<div class="empty-state">No notes uploaded by your instructor yet.</div>'; return; }
+            list.innerHTML = snap.docs.map(d => {
+                const n = d.data();
+                const date = n.uploadedAt?.toDate ? n.uploadedAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recently';
+                return `<div class="note-file-item">
+                    <div class="file-icon">📄</div>
+                    <div class="note-file-info">
+                        <div class="fname">${n.title || n.fileName}</div>
+                        <div class="fmeta">Uploaded ${date} · ${n.uploadedBy||'Instructor'}</div>
+                    </div>
+                    <a href="${n.fileUrl}" target="_blank" class="view-file-btn">🔗 Open Link</a>
+                </div>`;
+            }).join('');
+        });
+    }
+
+    // STUDENT ASSIGNMENTS + SUBMISSION
+    function loadStudentAssignments(courseId) {
+        const list = document.getElementById('student-assignments-list');
+        onSnapshot(query(collection(db, 'courses', courseId, 'assignments'), orderBy('createdAt', 'desc')), async (snap) => {
+            if (snap.empty) { list.innerHTML = '<div class="empty-state">No assignments posted yet.</div>'; return; }
+            const items = [];
+            for (const d of snap.docs) {
+                const a = d.data();
+                const dl = a.deadline ? new Date(a.deadline) : null;
+                const isPast = dl && dl < new Date();
+                const dlStr = dl ? dl.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'No deadline';
+                // Check existing submission
+                const subSnap = await getDoc(doc(db, 'courses', courseId, 'assignments', d.id, 'submissions', currentUser.uid));
+                const submitted = subSnap.exists();
+                const subData = submitted ? subSnap.data() : null;
+                const subDate = subData?.submittedAt?.toDate ? subData.submittedAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+                items.push({ id: d.id, ...a, dl, isPast, dlStr, submitted, subData, subDate });
+            }
+            list.innerHTML = items.map(a => `
+                <div class="assign-card">
+                    <div class="assign-title">${a.title}</div>
+                    ${a.description ? `<div class="assign-desc">${a.description}</div>` : ''}
+                    ${a.fileUrl ? `<div style="margin-bottom:10px;"><a href="${a.fileUrl}" target="_blank" style="color:var(--accent-blue); font-size:13px; text-decoration:none;">🔗 Open Assignment Link</a></div>` : ''}
+                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px;">
+                        <span class="deadline-chip ${a.isPast ? 'past' : 'active'}">⏰ ${a.isPast ? 'Deadline passed: ' : 'Due: '}${a.dlStr}</span>
+                        ${a.maxMarks ? `<span class="badge" style="background:rgba(96,165,250,0.12); color:#60a5fa;">${a.maxMarks} marks</span>` : ''}
+                    </div>
+                    <div class="submission-area">
+                        ${a.submitted
+                            ? `<div class="submitted-indicator">✅ Submitted on ${a.subDate}${a.subData?.fileUrl ? ` · <a href="${a.subData.fileUrl}" target="_blank" style="color:var(--accent-blue); text-decoration:none;">🔗 View my submission</a>` : ''}</div>`
+                            : a.isPast
+                                ? `<p style="font-size:13px; color:#f87171;">⚠ Deadline has passed. Submission closed.</p>`
+                                : `<div>
+                                    <p style="font-size:13px; color:#94a3b8; margin-bottom:10px;">Paste your Google Drive submission link:</p>
+                                    <div class="file-upload-row">
+                                        <input type="url" id="sub-drive-${a.id}" placeholder="https://drive.google.com/..." style="flex:1; min-width:200px; margin-bottom:0; font-size:13px;">
+                                    </div>
+                                    <textarea id="sub-note-${a.id}" placeholder="Optional note to instructor..." style="height:55px; margin-top:10px; margin-bottom:10px;"></textarea>
+                                    <button id="sub-btn-${a.id}" onclick="submitAssignment('${courseId}','${a.id}')" style="margin-top:8px; background:linear-gradient(135deg,#10b981,#059669); padding:9px 22px; font-size:13px;">Submit Assignment</button>
+                                </div>`
+                        }
+                    </div>
+                </div>`).join('');
+        });
+    }
+
+    window.submitAssignment = async (courseId, assignId) => {
+        const driveLink = document.getElementById(`sub-drive-${assignId}`)?.value.trim() || '';
+        const note = document.getElementById(`sub-note-${assignId}`)?.value.trim() || '';
+        const btn = document.getElementById(`sub-btn-${assignId}`);
+
+        if (!driveLink) { showToast('Please paste your Drive link', '#f59e0b'); return; }
+
+        btn.disabled = true; btn.innerText = 'Submitting...';
+
+        try {
+            await setDoc(doc(db, 'courses', courseId, 'assignments', assignId, 'submissions', currentUser.uid), {
+                studentId: currentUser.uid,
+                studentName: currentUserData.name,
+                assignmentId: assignId,
+                courseId,
+                fileUrl: driveLink,
+                fileName: null,
+                note,
+                submittedAt: serverTimestamp()
+            });
+
+            showToast('Assignment submitted successfully!', '#10b981');
+            loadStudentAssignments(courseId);
+            countPendingAssignments();
+        } catch (e) {
+            showToast('Error submitting assignment', '#ef4444');
+            console.error(e);
+        } finally {
+            btn.disabled = false; btn.innerText = 'Submit Assignment';
+        }
+    };
+
+    // ANNOUNCEMENTS
+    function loadCourseAnnouncements(courseId) {
+        onSnapshot(query(collection(db, 'courses', courseId, 'announcements'), orderBy('createdAt', 'desc')), (snap) => {
+            const list = document.getElementById('courseAnnouncementList');
+            if (snap.empty) { list.innerHTML = '<div class="empty-state">No announcements yet.</div>'; return; }
+            list.innerHTML = snap.docs.map(d => {
+                const a = d.data();
+                const date = a.createdAt?.toDate ? a.createdAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now';
+                return `<div class="announcement-item"><p class="a-course">📢 ${a.facultyName||'Instructor'}</p><p class="a-text">${a.text}</p><p class="a-meta">🕐 ${date}</p></div>`;
+            }).join('');
+        });
+    }
+
+    async function loadAllAnnouncements() {
+        const list = document.getElementById('allAnnouncementsList');
+        document.getElementById('allAnnouncementsLoader').style.display = 'block'; list.innerHTML = '';
+        if (!enrolledCourseIds.length) { document.getElementById('allAnnouncementsLoader').style.display = 'none'; list.innerHTML = '<div class="empty-state">Enroll in courses to see announcements.</div>'; return; }
+        let all = [];
+        for (const courseId of enrolledCourseIds) {
+            const course = allCatalogCourses.find(c => c.id === courseId) || enrolledCoursesData.find(c => c.id === courseId);
+            onSnapshot(query(collection(db, 'courses', courseId, 'announcements'), orderBy('createdAt', 'desc')), (snap) => {
+                all = all.filter(a => a.courseId !== courseId);
+                snap.docs.forEach(d => all.push({ ...d.data(), courseId, courseName: course?.name||'', courseCode: course?.code||'', _t: d.data().createdAt?.seconds||0 }));
+                all.sort((a, b) => b._t - a._t);
+                document.getElementById('dashAnnouncementCount').innerText = all.length;
+                list.innerHTML = all.length ? all.map(a => {
+                    const date = a.createdAt?.toDate ? a.createdAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now';
+                    return `<div class="announcement-item"><p class="a-course">${a.courseCode ? a.courseCode + ': ' : ''}${a.courseName} · ${a.facultyName||'Instructor'}</p><p class="a-text">${a.text}</p><p class="a-meta">🕐 ${date}</p></div>`;
+                }).join('') : '<div class="empty-state">No announcements yet.</div>';
+            });
+        }
+        
+        // Load exam announcements
+        onSnapshot(query(collection(db, 'exams'), orderBy('createdAt', 'desc')), (snap) => {
+            all = all.filter(a => a.type !== 'exam');
+            snap.docs.forEach(d => {
+                const exam = d.data();
+                all.push({ 
+                    text: `📝 Exam: ${exam.name} - ${exam.subject} on ${new Date(exam.date).toLocaleDateString()} at ${exam.time} in ${exam.room}`,
+                    courseName: 'Exam Schedule',
+                    courseCode: '🎓',
+                    facultyName: 'Administration',
+                    createdAt: exam.createdAt,
+                    _t: exam.createdAt?.seconds || 0,
+                    type: 'exam'
+                });
+            });
+            all.sort((a, b) => b._t - a._t);
+            document.getElementById('dashAnnouncementCount').innerText = all.length;
+            list.innerHTML = all.length ? all.map(a => {
+                const date = a.createdAt?.toDate ? a.createdAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now';
+                return `<div class="announcement-item"><p class="a-course">${a.courseCode ? a.courseCode + ': ' : ''}${a.courseName} · ${a.facultyName||'Instructor'}</p><p class="a-text">${a.text}</p><p class="a-meta">🕐 ${date}</p></div>`;
+            }).join('') : '<div class="empty-state">No announcements yet.</div>';
+        });
+        
+        // Load global announcements (TA recruitment, admin notices, etc)
+        onSnapshot(query(collection(db, 'globalAnnouncements'), orderBy('createdAt', 'desc')), (snap) => {
+            all = all.filter(a => a.type !== 'ta_recruitment' && a.type !== 'global' && a.type !== 'admin_notice');
+            snap.docs.forEach(d => {
+                const ann = d.data();
+                all.push({ 
+                    ...ann,
+                    courseCode: ann.type === 'admin_notice' ? '📢' : ann.courseCode,
+                    courseName: ann.type === 'admin_notice' ? 'Important Notice' : ann.courseName,
+                    facultyName: ann.type === 'admin_notice' ? 'Administration' : ann.facultyName,
+                    _t: ann.createdAt?.seconds || 0
+                });
+            });
+            all.sort((a, b) => b._t - a._t);
+            document.getElementById('dashAnnouncementCount').innerText = all.length;
+            list.innerHTML = all.length ? all.map(a => {
+                const date = a.createdAt?.toDate ? a.createdAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now';
+                return `<div class="announcement-item"><p class="a-course">${a.courseCode ? a.courseCode + ': ' : ''}${a.courseName} · ${a.facultyName||'Instructor'}</p><p class="a-text">${a.text}</p><p class="a-meta">🕐 ${date}</p></div>`;
+            }).join('') : '<div class="empty-state">No announcements yet.</div>';
+        });
+        
+        document.getElementById('allAnnouncementsLoader').style.display = 'none';
+    }
+
+    function updateGrievanceDropdown() {
+        document.getElementById('grievanceCourseSelect').innerHTML = '<option value="General">General Issue</option>' + enrolledCoursesData.map(c => `<option value="${c.id}">${c.code}: ${c.name}</option>`).join('');
+    }
+    window.submitGrievance = async () => {
+        const courseId = document.getElementById('grievanceCourseSelect').value;
+        const subject = document.getElementById('grievanceSubject').value.trim();
+        const desc = document.getElementById('grievanceDesc').value.trim();
+        const category = document.getElementById('grievanceCategory').value;
+        const priority = document.getElementById('grievancePriority').value;
+        const location = document.getElementById('grievanceLocation').value.trim();
+        const isAnonymous = document.getElementById('grievanceAnonymous').checked;
+        
+        if (!subject || !desc || !category) { 
+            showToast('Please fill subject, description and category', '#f59e0b'); 
+            return; 
+        }
+        
+        const btn = document.getElementById('submitGrievanceBtn'); 
+        btn.disabled = true; 
+        btn.innerText = 'Submitting...';
+        
+        try {
+            const course = enrolledCoursesData.find(c => c.id === courseId);
+            await addDoc(collection(db, 'grievances'), { 
+                studentId: isAnonymous ? 'anonymous' : currentUser.uid, 
+                studentName: isAnonymous ? 'Anonymous Student' : currentUserData.name,
+                studentEmail: isAnonymous ? 'anonymous' : currentUserData.email,
+                actualStudentId: currentUser.uid, // For student to track their own grievances
+                isAnonymous: isAnonymous,
+                courseId, 
+                course: course ? `${course.code}: ${course.name}` : courseId, 
+                facultyId: course?.facultyId || null,
+                category: category,
+                priority: priority,
+                location: location || 'Not specified',
+                subject, 
+                description: desc, 
+                status: 'Submitted',
+                statusHistory: [{
+                    status: 'Submitted',
+                    timestamp: new Date().toISOString(),
+                    remarks: 'Grievance submitted by student'
+                }],
+                createdAt: serverTimestamp() 
+            });
+            
+            showToast('Grievance submitted successfully!', '#10b981');
+            
+            // Clear form
+            document.getElementById('grievanceSubject').value = ''; 
+            document.getElementById('grievanceDesc').value = '';
+            document.getElementById('grievanceLocation').value = '';
+            document.getElementById('grievanceCategory').value = '';
+            document.getElementById('grievancePriority').value = 'Medium';
+            document.getElementById('grievanceAnonymous').checked = false;
+            
+            loadGrievanceHistory();
+        } catch (e) { 
+            console.error('Error submitting grievance:', e);
+            showToast('Error submitting grievance', '#ef4444'); 
+        } finally { 
+            btn.disabled = false; 
+            btn.innerText = 'Submit Grievance'; 
+        }
+    };
+
+    window.showSection = (id, element) => {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.sidebar li').forEach(li => li.classList.remove('active'));
+        if (element) element.classList.add('active');
+        if (id === 'announcements') loadAllAnnouncements();
+        if (id === 'grievance') { updateGrievanceDropdown(); loadGrievanceHistory(); }
+        if (id === 'attendance') renderAttendancePage();
+        if (id === 'research') { loadResearchOpportunities(); loadMyApplications(); }
+        if (id === 'academic') { loadAcademicTracker(); loadTasks(); }
+        if (id === 'vault') loadVault();
+        if (id === 'calendar') { initCalendar(); renderCalendar(); renderUpcoming(); }
+    };
+
+    // =====================================================================
+    // VAULT OF KNOWLEDGE
+    // =====================================================================
+    let allVaultItems = [], vaultFilterActive = 'all';
+    let vaultListenerInit = false;
+
+    function loadVault() {
+        if (!vaultListenerInit) {
+            vaultListenerInit = true;
+            onSnapshot(collection(db, 'vaultMaterials'), (snap) => {
+                allVaultItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                allVaultItems.sort((a, b) => (b.uploadedAt?.toMillis?.() || 0) - (a.uploadedAt?.toMillis?.() || 0));
+                renderVault();
+            }, (err) => {
+                console.error('Vault load error:', err);
+                document.getElementById('vaultList').innerHTML = '<div class="empty-state">Unable to load vault materials.</div>';
+            });
+        } else {
+            renderVault();
+        }
+    }
+
+    function renderVault() {
+        const list = document.getElementById('vaultList');
+        const search = (document.getElementById('vaultSearch')?.value || '').toLowerCase();
+        let items = allVaultItems;
+        if (vaultFilterActive !== 'all') items = items.filter(i => i.type === vaultFilterActive);
+        if (search) items = items.filter(i =>
+            (i.title || '').toLowerCase().includes(search) ||
+            (i.subject || '').toLowerCase().includes(search) ||
+            (i.year || '').toString().includes(search)
+        );
+        if (!items.length) {
+            list.innerHTML = '<div class="empty-state">No materials found.</div>';
+            return;
+        }
+        const typeIcons = { PYQ: '📄', Notes: '📝', Textbook: '📚', Other: '📌' };
+        list.innerHTML = items.map(i => {
+            const date = i.uploadedAt?.toDate ? i.uploadedAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recently';
+            const icon = typeIcons[i.type] || '📌';
+            return `
+                <div class="vault-item">
+                    <div class="vault-icon">${icon}</div>
+                    <div class="vault-item-info">
+                        <div class="vname">${i.title}</div>
+                        <div class="vmeta">${i.subject ? i.subject + ' · ' : ''}${i.year ? i.year + ' · ' : ''}Uploaded ${date}${i.uploadedBy ? ' by ' + i.uploadedBy : ''}</div>
+                    </div>
+                    <span class="vault-tag">${i.type || 'Other'}</span>
+                    <a href="${i.driveLink}" target="_blank" class="view-file-btn" style="margin-left:8px;">🔗 Open</a>
+                </div>`;
+        }).join('');
+    }
+
+    window.filterVault = () => renderVault();
+    window.setVaultFilter = (filter, btn) => {
+        vaultFilterActive = filter;
+        document.querySelectorAll('.vault-filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderVault();
+    };
+
+    // =====================================================================
+    // CHRONOS CALENDAR
+    // =====================================================================
+    let calYear = new Date().getFullYear();
+    let calMonth = new Date().getMonth();
+    let calEvents = []; // all merged events for the calendar
+    let calListenersInit = false; // guard: only set up onSnapshot listeners once
+
+    function initCalendar() {
+        renderCalendar();
+        if (!calListenersInit) {
+            calListenersInit = true;
+            loadCalendarEvents();
+        }
+    }
+
+    function loadCalendarEvents() {
+        calEvents = [];
+        // 1. Load exams from Firestore
+        onSnapshot(collection(db, 'exams'), (snap) => {
+            calEvents = calEvents.filter(e => e._source !== 'exam');
+            snap.docs.forEach(d => {
+                const ex = d.data();
+                if (ex.date) calEvents.push({ id: d.id, title: ex.name || ex.subject, date: ex.date, type: 'exam', _source: 'exam', detail: `${ex.subject || ''} · ${ex.time || ''} · ${ex.room || ''}` });
+            });
+            renderCalendar();
+            renderUpcoming();
+        });
+
+        // 2. Load assignment deadlines from enrolled courses
+        const reloadAssignments = async () => {
+            calEvents = calEvents.filter(e => e._source !== 'assignment');
+            for (const cid of enrolledCourseIds) {
+                try {
+                    const snap = await getDocs(collection(db, 'courses', cid, 'assignments'));
+                    snap.docs.forEach(d => {
+                        const a = d.data();
+                        if (a.deadline) {
+                            const dateStr = a.deadline.substring(0, 10);
+                            calEvents.push({ id: d.id, title: a.title, date: dateStr, type: 'assignment', _source: 'assignment', detail: `Assignment due · ${enrolledCoursesData.find(c=>c.id===cid)?.code||''}` });
+                        }
+                    });
+                } catch(e) { /* skip */ }
+            }
+            renderCalendar();
+            renderUpcoming();
+        };
+        reloadAssignments();
+
+        // 3. Load personal reminders from Firestore
+        onSnapshot(query(collection(db, 'studentReminders'), where('studentId', '==', currentUser.uid)), (snap) => {
+            calEvents = calEvents.filter(e => e._source !== 'reminder');
+            snap.docs.forEach(d => {
+                const r = d.data();
+                calEvents.push({ id: d.id, title: r.title, date: r.date, type: r.type || 'reminder', _source: 'reminder', _docId: d.id });
+            });
+            renderCalendar();
+            renderUpcoming();
+        });
+
+        // 4. Load student tasks with deadlines
+        onSnapshot(query(collection(db, 'studentTasks'), where('studentId', '==', currentUser.uid)), (snap) => {
+            calEvents = calEvents.filter(e => e._source !== 'task');
+            snap.docs.forEach(d => {
+                const t = d.data();
+                if (t.deadline && !t.completed) calEvents.push({ id: d.id, title: t.title, date: t.deadline, type: 'task', _source: 'task', detail: `${t.priority} Priority Task` });
+            });
+            renderCalendar();
+            renderUpcoming();
+        });
+    }
+
+    function renderCalendar() {
+        const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        document.getElementById('calMonthLabel').innerText = `${monthNames[calMonth]} ${calYear}`;
+        const grid = document.getElementById('calGrid');
+        if (!grid) return;
+
+        const today = new Date();
+        const firstDay = new Date(calYear, calMonth, 1).getDay();
+        const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+        const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+
+        let html = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="cal-day-label">${d}</div>`).join('');
+
+        // Prev month padding
+        for (let i = firstDay - 1; i >= 0; i--) {
+            html += `<div class="cal-day other-month"><div class="day-num">${daysInPrev - i}</div></div>`;
+        }
+
+        // Current month days
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
+            const dayEvents = calEvents.filter(e => e.date === dateStr);
+            const maxShow = 2;
+            const evDots = dayEvents.slice(0, maxShow).map(e =>
+                `<div class="cal-event-dot type-${e.type}" title="${e.title}">${e.title}</div>`
+            ).join('');
+            const moreLabel = dayEvents.length > maxShow ? `<div style="font-size:9px; color:#64748b;">+${dayEvents.length - maxShow} more</div>` : '';
+            html += `<div class="cal-day${isToday?' today':''}" onclick="showDayEvents('${dateStr}')"><div class="day-num">${d}</div>${evDots}${moreLabel}</div>`;
+        }
+
+        // Next month padding
+        const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+        for (let i = 1; i <= totalCells - firstDay - daysInMonth; i++) {
+            html += `<div class="cal-day other-month"><div class="day-num">${i}</div></div>`;
+        }
+        grid.innerHTML = html;
+    }
+
+    function renderUpcoming() {
+        const list = document.getElementById('upcomingEventsList');
+        if (!list) return;
+        const today = new Date(); today.setHours(0,0,0,0);
+        const limit = new Date(today); limit.setDate(limit.getDate() + 30);
+        const upcoming = calEvents
+            .filter(e => { const d = new Date(e.date); return d >= today && d <= limit; })
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+        if (!upcoming.length) { list.innerHTML = '<div class="empty-state" style="padding:20px;">No events in the next 30 days.</div>'; return; }
+        const typeColors = { exam:'#ef4444', assignment:'#fbbf24', task:'#60a5fa', reminder:'#10b981', holiday:'#a78bfa' };
+        list.innerHTML = upcoming.map(e => {
+            const d = new Date(e.date);
+            const dStr = d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
+            const color = typeColors[e.type] || '#64748b';
+            const canDelete = e._source === 'reminder';
+            return `<div class="upcoming-event-item" style="border-left-color:${color};">
+                <div style="min-width:70px; text-align:center; padding:6px 8px; background:${color}18; border-radius:8px;">
+                    <div style="font-size:10px; font-weight:700; color:${color};">${dStr.split(' ')[0]}</div>
+                    <div style="font-size:16px; font-weight:800; color:${color};">${dStr.split(' ')[1]}</div>
+                    <div style="font-size:10px; color:#64748b;">${dStr.split(' ')[2]}</div>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-weight:600; font-size:14px;">${e.title}</div>
+                    ${e.detail ? `<div style="font-size:11px; color:#64748b; margin-top:3px;">${e.detail}</div>` : ''}
+                    <span style="font-size:10px; font-weight:700; color:${color}; background:${color}18; padding:2px 8px; border-radius:10px; display:inline-block; margin-top:4px;">${e.type.toUpperCase()}</span>
+                </div>
+                ${canDelete ? `<button onclick="deleteReminder('${e._docId}')" style="background:rgba(239,68,68,0.12); color:#ef4444; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:12px; flex-shrink:0;">✕</button>` : ''}
+            </div>`;
+        }).join('');
+    }
+
+    window.changeCalMonth = (dir) => {
+        calMonth += dir;
+        if (calMonth > 11) { calMonth = 0; calYear++; }
+        if (calMonth < 0) { calMonth = 11; calYear--; }
+        renderCalendar();
+        renderUpcoming();
+    };
+
+    window.showDayEvents = (dateStr) => {
+        const dayEvents = calEvents.filter(e => e.date === dateStr);
+        if (!dayEvents.length) return;
+        const d = new Date(dateStr);
+        const dLabel = d.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+        const typeColors = { exam:'#ef4444', assignment:'#fbbf24', task:'#60a5fa', reminder:'#10b981', holiday:'#a78bfa' };
+        const details = dayEvents.map(e => {
+            const c = typeColors[e.type] || '#64748b';
+            return `<div style="padding:10px 12px; background:rgba(255,255,255,0.04); border-radius:8px; margin-bottom:8px; border-left:3px solid ${c};">
+                <div style="font-weight:600; font-size:13px;">${e.title}</div>
+                ${e.detail ? `<div style="font-size:11px; color:#64748b; margin-top:2px;">${e.detail}</div>` : ''}
+                <span style="font-size:10px; font-weight:700; color:${c};">${e.type.toUpperCase()}</span>
+            </div>`;
+        }).join('');
+        showToast(`${dLabel}: ${dayEvents.length} event${dayEvents.length>1?'s':''}`, '#3b82f6');
+    };
+
+    window.addReminder = async () => {
+        const title = document.getElementById('reminderTitle').value.trim();
+        const date = document.getElementById('reminderDate').value;
+        const type = document.getElementById('reminderType').value;
+        if (!title || !date) { showToast('Enter title and date', '#f59e0b'); return; }
+        try {
+            await addDoc(collection(db, 'studentReminders'), {
+                studentId: currentUser.uid, title, date, type, createdAt: serverTimestamp()
+            });
+            document.getElementById('reminderTitle').value = '';
+            document.getElementById('reminderDate').value = '';
+            showToast('Reminder added!', '#10b981');
+        } catch(e) { showToast('Error adding reminder', '#ef4444'); console.error(e); }
+    };
+
+    window.deleteReminder = async (docId) => {
+        try {
+            await deleteDoc(doc(db, 'studentReminders', docId));
+            showToast('Reminder removed', '#f59e0b');
+        } catch(e) { showToast('Error', '#ef4444'); }
+    };
+    
+    // ACADEMIC TRACKER FUNCTIONS
+    function loadAcademicTracker() {
+        const totalCourses = enrolledCoursesData.length;
+        const totalCredits = enrolledCoursesData.reduce((sum, c) => sum + (c.credits || 3), 0);
+        
+        document.getElementById('totalCoursesCount').innerText = totalCourses;
+        document.getElementById('totalCreditsCount').innerText = totalCredits;
+        
+        // Calculate overall attendance
+        const summaries = Object.values(attendanceSummaries);
+        if (summaries.length > 0) {
+            const totalPresent = summaries.reduce((sum, s) => sum + (s.presentClasses || 0), 0);
+            const totalClasses = summaries.reduce((sum, s) => sum + (s.totalClasses || 0), 0);
+            const overallPct = totalClasses > 0 ? Math.round((totalPresent / totalClasses) * 100) : 0;
+            document.getElementById('overallAttendancePercent').innerText = overallPct + '%';
+        } else {
+            document.getElementById('overallAttendancePercent').innerText = 'N/A';
+        }
+        
+        // Course breakdown
+        const breakdownList = document.getElementById('courseBreakdownList');
+        if (enrolledCoursesData.length === 0) {
+            breakdownList.innerHTML = '<div class="empty-state">No courses enrolled yet.</div>';
+            return;
+        }
+        
+        breakdownList.innerHTML = enrolledCoursesData.map(c => {
+            const s = attendanceSummaries[c.id];
+            const pct = s && s.totalClasses ? Math.round((s.presentClasses / s.totalClasses) * 100) : 0;
+            const attColor = pct >= 75 ? '#10b981' : pct >= 50 ? '#fbbf24' : '#ef4444';
+            
+            return `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(255,255,255,0.02); border-radius:8px; margin-bottom:8px;">
+                    <div style="flex:1;">
+                        <span style="font-weight:600; color:var(--accent-blue);">${c.code}</span>
+                        <span style="color:#94a3b8; margin-left:10px;">${c.name}</span>
+                    </div>
+                    <div style="display:flex; gap:15px; align-items:center;">
+                        <span style="font-size:12px; color:#64748b;">${c.credits || 3} credits</span>
+                        <span style="font-size:12px; font-weight:600; color:${attColor};">${pct}% attendance</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // TASK MANAGER FUNCTIONS
+    function loadTasks() {
+        onSnapshot(query(collection(db, 'studentTasks'), where('studentId', '==', currentUser.uid)), (snap) => {
+            const list = document.getElementById('tasksList');
+            if (snap.empty) {
+                list.innerHTML = '<div class="empty-state">No tasks yet. Add your first academic task above!</div>';
+                return;
+            }
+            
+            const tasks = snap.docs.map(d => ({id: d.id, ...d.data()}));
+            // Sort by createdAt descending in JS (avoids Firestore composite index requirement)
+            tasks.sort((a, b) => {
+                const timeA = a.createdAt?.toMillis?.() || 0;
+                const timeB = b.createdAt?.toMillis?.() || 0;
+                return timeB - timeA;
+            });
+            const pending = tasks.filter(t => !t.completed);
+            const completed = tasks.filter(t => t.completed);
+            
+            list.innerHTML = `
+                ${pending.length > 0 ? `
+                    <h4 style="margin:15px 0 10px; color:#94a3b8; font-size:13px;">PENDING TASKS (${pending.length})</h4>
+                    ${pending.map(t => renderTask(t)).join('')}
+                ` : ''}
+                ${completed.length > 0 ? `
+                    <h4 style="margin:20px 0 10px; color:#94a3b8; font-size:13px;">COMPLETED TASKS (${completed.length})</h4>
+                    ${completed.map(t => renderTask(t)).join('')}
+                ` : ''}
+            `;
+        }, (error) => {
+            console.error('Error loading tasks:', error);
+            const list = document.getElementById('tasksList');
+            list.innerHTML = '<div class="empty-state">Error loading tasks. Please try again.</div>';
+        });
+    }
+    
+    function renderTask(t) {
+        const deadline = t.deadline ? new Date(t.deadline) : null;
+        const isOverdue = deadline && deadline < new Date() && !t.completed;
+        const priorityColors = { High: '#ef4444', Medium: '#fbbf24', Low: '#10b981' };
+        const priorityColor = priorityColors[t.priority] || '#64748b';
+        
+        return `
+            <div style="display:flex; align-items:center; gap:12px; padding:12px; background:rgba(255,255,255,0.03); border-radius:10px; margin-bottom:8px; border-left:3px solid ${priorityColor}; ${t.completed ? 'opacity:0.6;' : ''}">
+                <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}', this.checked)" style="width:18px; height:18px; margin:0; cursor:pointer;">
+                <div style="flex:1;">
+                    <p style="font-weight:600; font-size:14px; ${t.completed ? 'text-decoration:line-through; color:#64748b;' : ''}">${t.title}</p>
+                    <div style="display:flex; gap:10px; margin-top:4px; flex-wrap:wrap;">
+                        <span style="font-size:11px; color:${priorityColor};">${t.priority} Priority</span>
+                        ${deadline ? `<span style="font-size:11px; color:${isOverdue ? '#ef4444' : '#64748b'};">📅 ${deadline.toLocaleDateString('en-IN', {day: 'numeric', month: 'short'})}</span>` : ''}
+                    </div>
+                </div>
+                <button onclick="deleteTask('${t.id}')" style="background:rgba(239,68,68,0.15); color:#ef4444; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;">Delete</button>
+            </div>
+        `;
+    }
+    
+    window.addTask = async () => {
+        const title = document.getElementById('taskTitle').value.trim();
+        const deadline = document.getElementById('taskDeadline').value;
+        const priority = document.getElementById('taskPriority').value;
+        
+        if (!title) {
+            showToast('Please enter a task title', '#f59e0b');
+            return;
+        }
+        
+        try {
+            await addDoc(collection(db, 'studentTasks'), {
+                studentId: currentUser.uid,
+                title: title,
+                deadline: deadline || null,
+                priority: priority,
+                completed: false,
+                createdAt: serverTimestamp()
+            });
+            
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDeadline').value = '';
+            document.getElementById('taskPriority').value = 'Medium';
+            showToast('Task added!', '#10b981');
+        } catch (e) {
+            console.error('Error adding task:', e);
+            showToast('Error adding task', '#ef4444');
+        }
+    };
+    
+    window.toggleTask = async (taskId, completed) => {
+        try {
+            await updateDoc(doc(db, 'studentTasks', taskId), {
+                completed: completed,
+                completedAt: completed ? serverTimestamp() : null
+            });
+        } catch (e) {
+            console.error('Error updating task:', e);
+            showToast('Error updating task', '#ef4444');
+        }
+    };
+    
+    window.deleteTask = async (taskId) => {
+        if (!confirm('Delete this task?')) return;
+        try {
+            await deleteDoc(doc(db, 'studentTasks', taskId));
+            showToast('Task deleted', '#f59e0b');
+        } catch (e) {
+            console.error('Error deleting task:', e);
+            showToast('Error deleting task', '#ef4444');
+        }
+    };
+    
+    function loadGrievanceHistory() {
+        // Query for both regular and anonymous grievances by this student
+        // Note: orderBy removed to avoid Firestore composite index requirement; sorting done in JS
+        onSnapshot(query(collection(db, 'grievances'), where('actualStudentId', '==', currentUser.uid)), (snap) => {
+            const list = document.getElementById('grievanceHistoryList');
+            if (snap.empty) {
+                list.innerHTML = '<div class="empty-state">No grievances submitted yet.</div>';
+                return;
+            }
+            // Sort by createdAt descending in JS
+            const sortedDocs = snap.docs.slice().sort((a, b) => {
+                const timeA = a.data().createdAt?.toMillis?.() || 0;
+                const timeB = b.data().createdAt?.toMillis?.() || 0;
+                return timeB - timeA;
+            });
+            list.innerHTML = sortedDocs.map(d => {
+                const g = d.data();
+                const date = g.createdAt?.toDate ? g.createdAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recently';
+                
+                // Status colors
+                const statusColors = {
+                    'Submitted': '#3b82f6',
+                    'Under Review': '#f59e0b',
+                    'In Progress': '#8b5cf6',
+                    'Resolved': '#10b981',
+                    'pending': '#64748b',
+                    'resolved': '#10b981'
+                };
+                const statusColor = statusColors[g.status] || '#64748b';
+                
+                // Priority colors
+                const priorityColors = {
+                    'Critical': '#ef4444',
+                    'High': '#f97316',
+                    'Medium': '#eab308',
+                    'Low': '#10b981'
+                };
+                const priorityColor = priorityColors[g.priority] || '#64748b';
+                
+                // Get latest status update
+                const latestStatus = g.statusHistory && g.statusHistory.length > 0 
+                    ? g.statusHistory[g.statusHistory.length - 1]
+                    : null;
+                
+                return `
+                    <div style="background:rgba(255,255,255,0.04); padding:20px; border-radius:14px; border:1px solid rgba(255,255,255,0.08); margin-bottom:15px;">
+                        <div style="display:flex; justify-content:space-between; align-items:start; gap:15px; margin-bottom:12px; flex-wrap:wrap;">
+                            <div style="flex:1;">
+                                <h4 style="color:var(--accent-blue); margin-bottom:6px;">${g.subject}</h4>
+                                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+                                    ${g.isAnonymous ? '<span class="badge" style="background:rgba(139,92,246,0.12); color:#a78bfa;">🔒 Anonymous</span>' : ''}
+                                    <span class="badge" style="background:rgba(96,165,250,0.12); color:#60a5fa;">${g.category || 'General'}</span>
+                                    <span class="badge" style="background:${priorityColor}22; color:${priorityColor};">${g.priority || 'Medium'} Priority</span>
+                                    ${g.location && g.location !== 'Not specified' ? `<span class="badge" style="background:rgba(99,102,241,0.12); color:#818cf8;">📍 ${g.location}</span>` : ''}
+                                </div>
+                                <p style="font-size:13px; color:#94a3b8; margin-bottom:8px;">📚 ${g.course}</p>
+                            </div>
+                            <span class="badge" style="background:${statusColor}22; color:${statusColor}; font-size:13px; white-space:nowrap;">
+                                ${g.status || 'Pending'}
+                            </span>
+                        </div>
+                        
+                        <div style="background:rgba(0,0,0,0.2); padding:12px; border-radius:8px; margin-bottom:12px;">
+                            <p style="font-size:13px; color:#cbd5e1;">${g.description}</p>
+                        </div>
+                        
+                        ${g.statusHistory && g.statusHistory.length > 0 ? `
+                            <div style="margin-top:12px;">
+                                <p style="font-size:12px; color:#64748b; margin-bottom:8px; font-weight:600;">📊 Status Timeline:</p>
+                                ${g.statusHistory.map((sh, idx) => `
+                                    <div style="display:flex; gap:10px; margin-bottom:6px; padding:8px; background:rgba(255,255,255,0.02); border-radius:6px; font-size:12px;">
+                                        <span style="color:${statusColors[sh.status] || '#64748b'};">●</span>
+                                        <div style="flex:1;">
+                                            <span style="color:#94a3b8;">${sh.status}</span>
+                                            ${sh.remarks ? `<p style="color:#64748b; margin-top:2px; font-style:italic;">"${sh.remarks}"</p>` : ''}
+                                            <p style="color:#475569; font-size:11px; margin-top:2px;">
+                                                ${sh.timestamp ? new Date(sh.timestamp).toLocaleString('en-IN') : ''}
+                                            </p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        <div style="font-size:12px; color:#64748b; margin-top:12px;">
+                            📅 Submitted: ${date}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }, (error) => {
+            console.error('Error loading grievance history:', error);
+            document.getElementById('grievanceHistoryList').innerHTML = '<div class="empty-state">Error loading grievances.</div>';
+        });
+    }
+    
+    function loadResearchOpportunities() {
+        try {
+            onSnapshot(query(collection(db, 'researchOpportunities'), where('status', '==', 'open')), (snap) => {
+                const list = document.getElementById('researchOpportunitiesList');
+                if (snap.empty) {
+                    list.innerHTML = '<div class="empty-state">No opportunities available yet.</div>';
+                    return;
+                }
+                // Sort by createdAt in JavaScript to avoid needing a composite index
+                const opportunities = snap.docs.map(d => ({id: d.id, data: d.data()}));
+                opportunities.sort((a, b) => {
+                    const timeA = a.data.createdAt?.toMillis?.() || 0;
+                    const timeB = b.data.createdAt?.toMillis?.() || 0;
+                    return timeB - timeA; // newest first
+                });
+                
+                list.innerHTML = opportunities.map(({id, data: opp}) => {
+                    return `
+                        <div class="enroll-card">
+                            <h3 style="color:var(--accent-blue); margin-bottom:8px;">${opp.title}</h3>
+                            <p style="font-size:13px; color:#94a3b8; margin-bottom:10px;">${opp.description}</p>
+                            <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
+                                <span class="badge badge-green">₹${opp.stipend}/month</span>
+                                <span class="badge badge-blue">${opp.hoursPerWeek} hrs/week</span>
+                            </div>
+                            <p style="font-size:12px; color:#64748b; margin-bottom:10px;">Posted by: ${opp.facultyName}</p>
+                            <button onclick="applyForResearch('${id}', '${opp.title}', '${opp.facultyId}', '${opp.facultyName}')">Apply Now</button>
+                        </div>
+                    `;
+                }).join('');
+            }, (error) => {
+                console.error('Error loading research opportunities:', error);
+                const list = document.getElementById('researchOpportunitiesList');
+                list.innerHTML = '<div class="empty-state">No opportunities available yet.</div>';
+            });
+        } catch (e) {
+            console.error('Error in loadResearchOpportunities:', e);
+        }
+    }
+    
+    window.applyForResearch = async (oppId, oppTitle, facultyId, facultyName) => {
+        const message = prompt('Why are you interested in this opportunity? (Optional)');
+        if (message === null) return; // User cancelled
+        
+        try {
+            await addDoc(collection(db, 'researchApplications'), {
+                opportunityId: oppId,
+                opportunityTitle: oppTitle,
+                studentId: currentUser.uid,
+                studentName: currentUserData.name,
+                facultyId: facultyId,
+                facultyName: facultyName,
+                message: message || 'I am interested in this opportunity.',
+                status: 'pending',
+                appliedAt: serverTimestamp()
+            });
+            showToast('Application submitted!', '#10b981');
+            loadMyApplications();
+        } catch (e) {
+            showToast('Error submitting application', '#ef4444');
+            console.error(e);
+        }
+    };
+    
+    function loadMyApplications() {
+        try {
+            onSnapshot(query(collection(db, 'researchApplications'), where('studentId', '==', currentUser.uid)), (snap) => {
+                const list = document.getElementById('myApplicationsList');
+                if (snap.empty) {
+                    list.innerHTML = '<div class="empty-state">You haven\'t applied to any opportunities yet.</div>';
+                    return;
+                }
+                // Sort by appliedAt in JavaScript
+                const applications = snap.docs.map(d => ({id: d.id, data: d.data()}));
+                applications.sort((a, b) => {
+                    const timeA = a.data.appliedAt?.toMillis?.() || 0;
+                    const timeB = b.data.appliedAt?.toMillis?.() || 0;
+                    return timeB - timeA; // newest first
+                });
+                
+                list.innerHTML = applications.map(({id, data: app}) => {
+                    const isSelected = app.status === 'selected';
+                    const isRejected = app.status === 'rejected';
+                    const date = app.appliedAt?.toDate ? app.appliedAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recently';
+                    return `
+                        <div class="grievance-history-item">
+                            <div class="grievance-header">
+                                <div class="grievance-subject">${app.opportunityTitle}</div>
+                            <span class="status-badge ${isSelected ? 'status-resolved' : isRejected ? 'status-pending' : 'badge-yellow'}">
+                                ${isSelected ? '✅ Selected' : isRejected ? '❌ Rejected' : '⏳ Pending'}
+                            </span>
+                        </div>
+                        <div class="grievance-course">📚 Faculty: ${app.facultyName}</div>
+                        <div class="grievance-desc">${app.message}</div>
+                        <div class="grievance-date">📅 Applied: ${date}</div>
+                    </div>
+                `;
+            }).join('');
+            }, (error) => {
+                console.error('Error loading applications:', error);
+                const list = document.getElementById('myApplicationsList');
+                list.innerHTML = '<div class="empty-state">You haven\'t applied to any opportunities yet.</div>';
+            });
+        } catch (e) {
+            console.error('Error in loadMyApplications:', e);
+        }
+    }
+    
+    window.doLogout = async () => { await signOut(auth); window.location.href = 'index.html'; };
+    function showToast(msg, color = '#3b82f6') { const t = document.createElement('div'); t.className = 'toast'; t.style.background = color; t.innerText = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3200); }
+    
+    // Mobile Menu Toggle
+    window.toggleMobileMenu = function() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    };
+
+    window.closeMobileMenu = function() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    };
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(event) {
+        const sidebar = document.querySelector('.sidebar');
+        const menuBtn = document.querySelector('.mobile-menu-btn');
+        
+        if (window.innerWidth <= 768) {
+            if (!sidebar.contains(event.target) && !menuBtn.contains(event.target)) {
+                closeMobileMenu();
+            }
+        }
+    });
+
+    // Close mobile menu when section is clicked
+    document.querySelectorAll('.sidebar li').forEach(item => {
+        item.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                closeMobileMenu();
+            }
+        });
+    });
+
+
+</script>
+</body>
+</html>
