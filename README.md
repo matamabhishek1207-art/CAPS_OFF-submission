@@ -1,8 +1,10 @@
 # CAPS_OFF-submission
 A web platform to manage students, track performance, and simplify academic administration through an intuitive dashboard.
 ---
-##Live demo
+## Live demo
 https://frabjous-frangipane-37c4c3.netlify.app
+## Demo Video link:
+https://drive.google.com/file/d/1mv39GCB5r26-goUE5lXO44WeV0TyZOnr/view
 
 ## Problem Statement
 In most colleges, academic tools are scattered across many platforms.  
