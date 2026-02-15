@@ -1,5 +1,6 @@
 # CAPS_OFF-submission
 A web platform to manage students, track performance, and simplify academic administration through an intuitive dashboard.
+---
 ##Live demo
 https://frabjous-frangipane-37c4c3.netlify.app
 
