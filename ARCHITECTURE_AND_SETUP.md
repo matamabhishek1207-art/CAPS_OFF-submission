@@ -164,6 +164,22 @@ Open index.html in the browser
 The project runs without build tools.
 
 ---
+### 9. Why Firebase Was Chosen
 
+Firebase was selected because it provides:
+
+• Serverless backend architecture  
+• Real-time database capabilities  
+• Built-in authentication  
+• Easy deployment and scalability  
+• Fast development for hackathon timeline
+
+---
+
+### Backend Architecture Summary
+
+Frontend Dashboards → Firebase Authentication → Firestore Database → Firebase Storage
+
+This architecture enables a scalable full-stack academic portal.
 
 
